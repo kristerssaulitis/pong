@@ -11,7 +11,7 @@
 #include "hw1.h"
 
 #define MAX_CLIENTS 10
-#define PORT 12331
+#define PORT 12343
 #define SHARED_MEMORY_SIZE 10
 
 char* shared_memory = NULL;
@@ -28,10 +28,17 @@ void get_shared_memory(){
 void gameloop(){
     printf("Started game loop! (it will run forever - use ctrl+C)\n");
     int i=0;
+
+    /*nu sis vispar ne suda nedara bet vajag atrast pareizo vietu kur iespraust*/
+    int b;
+    for (b = 1; b < SHARED_MEMORY_SIZE - MAX_CLIENTS; i++){
+        shared_data[MAX_CLIENTS + b] = '1';
+    }
+    /*                              NJA                                        */
+
     while(1){
-        /*memory struct looks like this [data 0,0,0,0,0, |other half| id 1, id 2..] => [0,0,0,0,1,2,3,4]*/
         for(i = 0; i<*client_count; i++){
-            shared_data[MAX_CLIENTS +i] += shared_data[i];
+            shared_data[MAX_CLIENTS +i] += shared_data[i]; /*te tas suns aprakts*/
             shared_data[i] = 0;
         }
         sleep(1);
@@ -97,45 +104,31 @@ void start_network(){
 
 void process_client(int id, int socket){
     char in[1];
-    char out[100];
+    char out[1000];
 
     printf("Process client id = %d, socket= %d\n", id, socket);
     printf("Client count %d\n", *client_count);
 
+    /*Old example code*/
     while(1){
         read(socket, in, 1);
-            char temp_str[256];
-            int i = 0;
-            shared_data[id] = shared_data[id] + 1;
-
-            for(i = 0; i < shared_data[id]; i++){
-                temp_str[i] = in[0];
+        int i = 0;
+        char temp_str[256];
+        shared_data[i] = 1;
+        for(i = 0; i < (shared_data[MAX_CLIENTS + id]); i++){
+                temp_str[i] = (char)in[0];
+                /*printf("string in making -> %s\n", temp_str);*/
             }
-            temp_str[shared_data[id]] = '\0';
-            sprintf(out, "%s\n", temp_str);
+            temp_str[shared_data[MAX_CLIENTS + id]] = '\0';
+            sprintf(out, "CLIENT %d SUM = %s\n", id, temp_str);
             write(socket,out,strlen(out));
             printf("CLIENT %d read char %c\n", id , in[0]);
-            
     }
-
-    /*Old example code*/
-    /*
-    while(1){
-        read(socket, in, 1);
-        if(in[0] > 47 && in[0] <58){
-            sprintf(out, "CLIENT %d SUM = %d\n", id, shared_data[MAX_CLIENTS + id]);
-            write(socket,out,strlen(out));
-            i = (int)in[0] -48;
-            printf("CLIENT %d read number %d\n", id , i);
-            shared_data[id] = i;
-        }
-    }
-    */
+    
 }
 
 int main(){
     int pid = 0;
-    int i;
     printf("SERVER started!\n");
     get_shared_memory();
 
