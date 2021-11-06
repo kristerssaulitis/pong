@@ -8,7 +8,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <sys/mman.h>
-#include <hw1.h>
+#include "hw1.h"
 
 #define MAX_CLIENTS 10
 #define PORT 12331
@@ -16,7 +16,7 @@
 
 char* shared_memory = NULL;
 int* client_count = NULL;
-int* shared_data = NULL; // client id's, bitu daudzums (cik daudz ir atsutits bits),
+int* shared_data = NULL; /* client id's, bitu daudzums (cik daudz ir atsutits bits),*/
 /* for loops bite, jaskatas uz shared data*/
 
 void get_shared_memory(){
