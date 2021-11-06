@@ -28,6 +28,7 @@ void gameloop(){
     printf("Started game loop! (it will run forever - use ctrl+C)\n");
     int i=0;
     while(1){
+        /*memory struct looks like this [data 0,0,0,0,0, |other half| id 1, id 2..] => [0,0,0,0,1,2,3,4]*/
         for(i = 0; i<*client_count; i++){
             shared_data[MAX_CLIENTS +i] += shared_data[i];
             shared_data[i] = 0;
@@ -94,7 +95,6 @@ void start_network(){
 }
 
 void process_client(int id, int socket){
-    int i = 0;
     char in[1];
     char out[100];
 
@@ -103,15 +103,33 @@ void process_client(int id, int socket){
 
     while(1){
         read(socket, in, 1);
+            char temp_str[256];
+            int i = 0;
+            shared_data[id] = shared_data[id] + 1;
+
+            for(i = 0; i < shared_data[id]; i++){
+                temp_str[i] = in[0];
+            }
+            temp_str[shared_data[id]] = '\0';
+            sprintf(out, "%s\n", temp_str);
+            write(socket,out,strlen(out));
+            printf("CLIENT %d read char %c\n", id , in[0]);
+            
+    }
+
+    /*Old example code*/
+    /*
+    while(1){
+        read(socket, in, 1);
         if(in[0] > 47 && in[0] <58){
             sprintf(out, "CLIENT %d SUM = %d\n", id, shared_data[MAX_CLIENTS + id]);
             write(socket,out,strlen(out));
             i = (int)in[0] -48;
             printf("CLIENT %d read number %d\n", id , i);
-            /*printf("CLIENT %d read number %d\n", id , i);*/ /*was printing the input value - old version*/
             shared_data[id] = i;
         }
     }
+    */
 }
 
 int main(){
