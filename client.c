@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <hw1.h>
 
 #define HOST "localhost"
 #define PORT 12331

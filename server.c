@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include <hw1.h>
 
 #define MAX_CLIENTS 10
 #define PORT 12331
