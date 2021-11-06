@@ -9,7 +9,24 @@
 #define HOST "localhost"
 #define PORT 12331
 
-int main(){
+char* inputCheck(char* argv){
+    char* result;
+    if (str_length(argv) == 6){
+
+    }
+}
+
+int main(int argc, char ** argv){
+    if (argc < 3){
+        printf("not enough arguments \n");
+        return -1;
+    }
+    char* host;
+    char* port;
+    host = inputCheck(argv[1]);
+    port = inputCheck(argv[2]);
+
+
     int my_socket = 0;
     char* servername;
     struct sockaddr_in remote_address;
@@ -23,18 +40,21 @@ int main(){
         printf("SOCKET ERROR\n");
         return -1;
     }
-    if(connect(my_socket,(struct  sockaddr *) &remote_address,sizeof(remote_address)) < 0)
-    {
-        printf("ERROR connecting\n");
-        return -1;
-    }else{
-        printf("good connection\n");
-        while(1){
-            char inputs[256];
-            scanf("%s", inputs);
-            //strcat("\n", inputs);
-            send(my_socket, inputs, strlen(inputs), 0);
-        }
-    }
+    // threading
+
+    // if(connect(my_socket,(struct  sockaddr *) &remote_address,sizeof(remote_address)) < 0)
+    // {
+    //     printf("ERROR connecting\n");
+    //     return -1;
+    // }else{
+    //     printf("good connection\n");
+    //     while(1){
+    //         char inputs[256];
+    //         scanf("%s", inputs);
+    //         //strcat("\n", inputs);
+    //         send(my_socket, inputs, strlen(inputs), 0);
+    //     }
+    // }
+
     return 0;
 }

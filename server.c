@@ -16,7 +16,8 @@
 
 char* shared_memory = NULL;
 int* client_count = NULL;
-int* shared_data = NULL;
+int* shared_data = NULL; // client id's, bitu daudzums (cik daudz ir atsutits bits),
+/* for loops bite, jaskatas uz shared data*/
 
 void get_shared_memory(){
     shared_memory = mmap(NULL, SHARED_MEMORY_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
