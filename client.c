@@ -7,32 +7,41 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/wait.h>
 
+#define MAXSIZE 1024
+#define PORT 12333
+#define HOST "localhost"
 
 char* host;
 int port;
 struct sockaddr_in remote_address;
-int my_socket;
 
+void *connection_handler(void* socket_desc);
 
-void *connection_handler(void *socket_desc);
+void *connection_handler(void* args){
+    char inputs[256];
+    int my_sock = *(int*) args;
+    free(args);
 
-void *connection_handler(void *args){
-    if(connect(my_socket,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0)
-    {
+    if(connect(my_sock,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0){
         printf("ERROR connecting\n");
-        return -1;
+        exit(1);
     }else{
+        char buffer [MAXSIZE];
+        memset(buffer, 0, MAXSIZE);
         printf("good connection\n");
         while(1){
-            char inputs[256];
-            scanf("%s", inputs);
-            //strcat("\n", inputs);
-            send(my_socket, inputs, sizeof(inputs), 0);
-            /*read also some stuff - ja var nolasīt, tad var izprintet*/
+
+            scanf("%s",inputs);
+            send(my_sock,inputs,strlen(inputs),0);
+            sleep(1);
+            if (read(my_sock, buffer, MAXSIZE-1)>0){
+                printf("buffer: %s", buffer);
+            }
         }
     }
-    pthread_exit(NULL);
+    return NULL;
 }
 
 int main(int argc, char ** argv){
@@ -55,32 +64,39 @@ int main(int argc, char ** argv){
     char* realport;
     char *randomhost = argv[1];
     char *ranodmport = argv[2];
-    char* found;
+
     for (i =0; i< 2; i++) host = strsep(&randomhost,"=");
     for (i =0; i< 2; i++) realport = strsep(&ranodmport,"=");
     port = atoi(realport);
 
+
     printf("this is host :%s and this is port:%i      ", host, port);
 
 
-    my_socket = 0;
+    int my_socket = 0;
     char* servername;
 
     remote_address.sin_family = AF_INET;
     remote_address.sin_port = htons(port);
-    servername= gethostbyname(host);
+    servername = gethostbyname(host);
+    printf("tiek līdz šejienei");
+        fflush(stdout);
     inet_pton(AF_INET, servername, &remote_address.sin_addr);
+        printf("tiek līdz šejienei");
+        fflush(stdout);
 
-    if((my_socket = socket(AF_INET,SOCK_STREAM,0)) <= 0){
+    if((my_socket = socket(AF_INET,SOCK_STREAM,0)) < 0){
         printf("SOCKET ERROR\n");
         return -1;
     }
 
     int *socketname = malloc(sizeof(int));
     *socketname = my_socket;
-
+    printf("tiek līdz šejienei");
+    fflush(stdout);
     pthread_t tred;
-    if (pthread_create(&tred, NULL, connection_handler, socketname) == 0); pthread_join(tred, 0);
+    pthread_create(&tred, NULL, connection_handler, socketname);
+    pthread_join(tred, 0);
 
     return 0;
 }

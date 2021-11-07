@@ -12,13 +12,16 @@
 
 
 #define MAX_CLIENTS 10
-#define PORT 12331
+#define PORT 12334
 #define SHARED_MEMORY_SIZE 10
 
 char* shared_memory = NULL;
 int* client_count = NULL;
-int* shared_data = NULL; /* client id's, bitu daudzums (cik daudz ir atsutits bits),*/
-/* for loops bite, jaskatas uz shared data*/
+int* shared_data = NULL;
+/*
+int port;
+char* host;
+*/
 
 /*memory still organised in array that is split in half as i use it as a map id->empty half id+MAX clients-> byte count for client*/
 void get_shared_memory(){
@@ -131,7 +134,7 @@ void process_client(int id, int socket){
 
 }
 
-int main(){
+/*int main(int argc, char** argv){*/
     /*japielik argc un argv*/
     /*if (argc < 1){
         printf("not enough arguments \n");
@@ -146,10 +149,10 @@ int main(){
 
     char* realport;
     char *ranodmport = argv[2];
-    char* found;
     for (i =0; i< 2; i++) realport = strsep(&ranodmport,"=");
     port = atoi(realport);
 */
+int main(){
     int pid = 0;
     printf("SERVER started!\n");
     get_shared_memory();

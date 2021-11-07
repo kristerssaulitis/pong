@@ -1,99 +1,77 @@
-// C program for the Client Side
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
+struct sockaddr_in remote_adress;
+char host[40];
+int port;
 
-// inet_addr
-#include <arpa/inet.h>
-#include <unistd.h>
 
-// For threading, link with lpthread
-#include <pthread.h>
-#include <semaphore.h>
-
-// Function to send data to
-// server socket.
-void* clienthread(void* args)
-{
-
-	int client_request = *((int*)args);
-	int network_socket;
-
-	// Create a stream socket
-	network_socket = socket(AF_INET,
-							SOCK_STREAM, 0);
-
-	// Initialise port number and address
-	struct sockaddr_in server_address;
-	server_address.sin_family = AF_INET;
-	server_address.sin_addr.s_addr = INADDR_ANY;
-	server_address.sin_port = htons(8989);
-
-	// Initiate a socket connection
-	int connection_status = connect(network_socket,
-									(struct sockaddr*)&server_address,
-									sizeof(server_address));
-
-	// Check for connection error
-	if (connection_status < 0) {
-		puts("Error\n");
-		return 0;
-	}
-
-	printf("Connection estabilished\n");
-
-	// Send data to the socket
-	send(network_socket, &client_request,
-		sizeof(client_request), 0);
-
-	// Close the connection
-	close(network_socket);
-	pthread_exit(NULL);
-
-	return 0;
+void* connectToServer(void* clientSocket){
+    int second = 1000;
+    char inputs[100];
+    int my_socket = (int)clientSocket;
+    free(clientSocket);
+    if(connect(my_socket,(struct sockaddr *)&remote_adress,sizeof(remote_adress))<0){
+        printf("ERROR WHEN MAKING CONNECTION\n");
+        exit(1);
+    }
+    else{
+        char recievedLine[MAX_LINE];
+        memset(recievedLine,0,MAX_LINE);
+        while(1){
+            scanf("%s",inputs);
+            send(my_socket,inputs,strlen(inputs),0);
+            sleep(0.1);
+            if(read(my_socket,recievedLine,MAX_LINE-1)>0) printf("%s",recievedLine);
+        }
+    }
+    return NULL;
 }
 
-// Driver Code
-int main()
-{
-	printf("1. Read\n");
-	printf("2. Write\n");
 
-	// Input
-	int choice;
-	scanf("%d", &choice);
-	pthread_t tid;
+int main(int argc, char* argv[]){
+    char* argument = argv[1];
+    char* argument1= argv[2];
+    char* onlyArg;
+    char* onlyArg1;
+    if(strncmp(argument,IP_CHECK,2)!=0&&strncmp(argument,PORT_CHECK,2)!=0){
+        printf("First input paramater is incorrect.\n");
+        return -1;
+    }
+    else if(strncmp(argument,IP_CHECK,2)!=0&&strncmp(argument,PORT_CHECK,2)!=0){
+        printf("Second input paramater is incorrect.\n");
+        return -1;
+    }
+    int j;
+    for(j=0;j<2;j++) onlyArg = strsep(&argument,"=");
+    for(j=0;j<2;j++) onlyArg1 = strsep(&argument1,"=");
 
-	// Create connection
-	// depending on the input
-	switch (choice) {
-	case 1: {
-		int client_request = 1;
+    if(strncmp(argv[1],IP_CHECK,3)==0){
+        strcpy(host,onlyArg);
+        port = atoi(onlyArg1);
+    }
+    else{
+        strcpy(host,onlyArg1);
+        port = atoi(onlyArg);
+    }
 
-		// Create thread
-		pthread_create(&tid, NULL,
-					clienthread,
-					&client_request);
-		sleep(20);
-		break;
-	}
-	case 2: {
-		int client_request = 2;
+    int my_socket = 0;
+    char* servername;
 
-		// Create thread
-		pthread_create(&tid, NULL,
-					clienthread,
-					&client_request);
-		sleep(20);
-		break;
-	}
-	default:
-		printf("Invalid Input\n");
-		break;
-	}
+    remote_adress.sin_family = AF_INET;
+    remote_adress.sin_port = htons(port);
+    servername =gethostbyname(host);
+    inet_pton(AF_INET,servername,&remote_adress.sin_addr);
 
-	// Suspend execution of
-	// calling thread
-	pthread_join(tid, NULL);
+    if((my_socket = socket(AF_INET, SOCK_STREAM, 0))<0){
+        printf("SOCKET ERROR\n");
+        return -1;
+    }
+
+    int *socketAdress = malloc(sizeof(int));
+    *socketAdress = my_socket;
+    pthread_t thread;
+    pthread_create(&thread,NULL,connectToServer,socketAdress);
+    pthread_join(thread, 0);
+
+
+
+    return 0;
 }
