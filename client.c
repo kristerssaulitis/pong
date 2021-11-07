@@ -11,7 +11,7 @@
 #include <netdb.h>
 
 #define MAXSIZE 1024
-
+/**/
 char* host;
 int port;
 struct sockaddr_in remote_address;

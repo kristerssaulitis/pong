@@ -15,7 +15,7 @@
 #define MAX_CLIENTS 10
 #define PORT 12336
 #define SHARED_MEMORY_SIZE 10
-
+/**/
 int port;
 
 char* shared_memory = NULL;
