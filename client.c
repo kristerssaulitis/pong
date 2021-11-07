@@ -16,7 +16,7 @@ char* servername;
 void *connection_handler(void *socket_desc);
 
 void *connection_handler(void *socket_desc){
-    if(connect(my_socket,(struct  sockaddr *) &remote_address,sizeof(remote_address)) < 0)
+    if(connect(my_socket,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0)
     {
         printf("ERROR connecting\n");
         return -1;
@@ -30,7 +30,6 @@ void *connection_handler(void *socket_desc){
             /*read also some stuff - ja var nolasīt, tad var izprintet*/
         }
     }
-
 }
 
 int main(int argc, char ** argv){
@@ -74,14 +73,14 @@ int main(int argc, char ** argv){
         printf("SOCKET ERROR\n");
         return -1;
     }
-    /* threading*/
+
 
     int *socketname = malloc(sizeof(int));
     *socketname = my_socket;
-
+/*
     pthread_t tred;
     pthread_create(&tred, NULL, connection_handler, socketname);
-    pthread_join(tred, 0);
+    pthread_join(tred, 0); */
 
     return 0;
 }
