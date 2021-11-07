@@ -1,12 +1,11 @@
 #include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#include <string.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
-#include "hw1.h"
 #include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
 
 char* host;
 int port;

@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include "hw1.h"
 
+
 #define MAX_CLIENTS 10
 #define PORT 12331
 #define SHARED_MEMORY_SIZE 10
@@ -127,7 +128,7 @@ void process_client(int id, int socket){
             printf("CLIENT %d read char %i\n", id , (int)in[0]);
         }
     }
-    
+
 }
 
 int main(){
