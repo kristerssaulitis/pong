@@ -1,4 +1,4 @@
-struct sockaddr_in remote_adress;
+/*struct sockaddr_in remote_adress;
 char host[40];
 int port;
 
@@ -75,3 +75,4 @@ int main(int argc, char* argv[]){
 
     return 0;
 }
+*/

@@ -9,11 +9,14 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include "hw1.h"
+#include <sys/types.h>
 
 
 #define MAX_CLIENTS 10
-#define PORT 12334
+#define PORT 12336
 #define SHARED_MEMORY_SIZE 10
+
+int port;
 
 char* shared_memory = NULL;
 int* client_count = NULL;
@@ -64,7 +67,7 @@ void start_network(){
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(PORT);
+    server_address.sin_port = htons(port);
 
     if(bind(main_socket, (struct sockaddr*) &server_address, sizeof(server_address)) < 0){
         printf("Error binding the main server socket!\n");
@@ -134,25 +137,20 @@ void process_client(int id, int socket){
 
 }
 
-/*int main(int argc, char** argv){*/
+int main(int argc, char** argv){
     /*japielik argc un argv*/
-    /*if (argc < 1){
-        printf("not enough arguments \n");
-        return -1;
-    }
 
     int i = 0;
     if (strncmp("-p=", argv[1],3) < 0){
         printf("wrong parameter PORT %s \n", argv[2]);
         return -1;
     }
-
     char* realport;
-    char *ranodmport = argv[2];
+    char *ranodmport = argv[1];
     for (i =0; i< 2; i++) realport = strsep(&ranodmport,"=");
     port = atoi(realport);
-*/
-int main(){
+    printf("tiek līdz šejienei");
+    fflush(stdout);
     int pid = 0;
     printf("SERVER started!\n");
     get_shared_memory();

@@ -8,10 +8,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/wait.h>
+#include <netdb.h>
 
 #define MAXSIZE 1024
-#define PORT 12333
-#define HOST "localhost"
 
 char* host;
 int port;
@@ -79,12 +78,12 @@ int main(int argc, char ** argv){
     remote_address.sin_family = AF_INET;
     remote_address.sin_port = htons(port);
     servername = gethostbyname(host);
-    printf("tiek līdz šejienei");
-        fflush(stdout);
+
     inet_pton(AF_INET, servername, &remote_address.sin_addr);
+        /*
         printf("tiek līdz šejienei");
         fflush(stdout);
-
+        */
     if((my_socket = socket(AF_INET,SOCK_STREAM,0)) < 0){
         printf("SOCKET ERROR\n");
         return -1;
@@ -92,8 +91,10 @@ int main(int argc, char ** argv){
 
     int *socketname = malloc(sizeof(int));
     *socketname = my_socket;
+    /*
     printf("tiek līdz šejienei");
     fflush(stdout);
+    */
     pthread_t tred;
     pthread_create(&tred, NULL, connection_handler, socketname);
     pthread_join(tred, 0);
