@@ -1,66 +1,99 @@
+// C program for the Client Side
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+
+// inet_addr
+#include <arpa/inet.h>
 #include <unistd.h>
 
-#define MAX_SIZE 50
-#define NUM_CLIENT 5
-void *connection_handler(void *socket_desc);
-int main()
+// For threading, link with lpthread
+#include <pthread.h>
+#include <semaphore.h>
+
+// Function to send data to
+// server socket.
+void* clienthread(void* args)
 {
-    int socket_desc , new_socket , c , *new_sock, i;
-    pthread_t sniffer_thread;
-    for (i=1; i<=NUM_CLIENT; i++) {
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) i) < 0)
-        {
-            perror("could not create thread");
-            return 1;
-        }
-        sleep(3);
-    }
-    pthread_exit(NULL);
-    return 0;
+
+	int client_request = *((int*)args);
+	int network_socket;
+
+	// Create a stream socket
+	network_socket = socket(AF_INET,
+							SOCK_STREAM, 0);
+
+	// Initialise port number and address
+	struct sockaddr_in server_address;
+	server_address.sin_family = AF_INET;
+	server_address.sin_addr.s_addr = INADDR_ANY;
+	server_address.sin_port = htons(8989);
+
+	// Initiate a socket connection
+	int connection_status = connect(network_socket,
+									(struct sockaddr*)&server_address,
+									sizeof(server_address));
+
+	// Check for connection error
+	if (connection_status < 0) {
+		puts("Error\n");
+		return 0;
+	}
+
+	printf("Connection estabilished\n");
+
+	// Send data to the socket
+	send(network_socket, &client_request,
+		sizeof(client_request), 0);
+
+	// Close the connection
+	close(network_socket);
+	pthread_exit(NULL);
+
+	return 0;
 }
 
-void *connection_handler(void *threadid)
+// Driver Code
+int main()
 {
-    int threadnum = (int)threadid;
-    int sock_desc;
-    struct sockaddr_in serv_addr;
-    char sbuff[MAX_SIZE],rbuff[MAX_SIZE];
+	printf("1. Read\n");
+	printf("2. Write\n");
 
-    if((sock_desc = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        printf("Failed creating socket\n");
+	// Input
+	int choice;
+	scanf("%d", &choice);
+	pthread_t tid;
 
-    bzero((char *) &serv_addr, sizeof (serv_addr));
+	// Create connection
+	// depending on the input
+	switch (choice) {
+	case 1: {
+		int client_request = 1;
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serv_addr.sin_port = htons(8888);
+		// Create thread
+		pthread_create(&tid, NULL,
+					clienthread,
+					&client_request);
+		sleep(20);
+		break;
+	}
+	case 2: {
+		int client_request = 2;
 
-    if (connect(sock_desc, (struct sockaddr *) &serv_addr, sizeof (serv_addr)) < 0) {
-        printf("Failed to connect to server\n");
-    }
+		// Create thread
+		pthread_create(&tid, NULL,
+					clienthread,
+					&client_request);
+		sleep(20);
+		break;
+	}
+	default:
+		printf("Invalid Input\n");
+		break;
+	}
 
-    printf("Connected successfully client:%d\n", threadnum);
-    while(1)
-    {
-        printf("For thread : %d\n", threadnum);
-        fgets(sbuff, MAX_SIZE , stdin);
-        send(sock_desc,sbuff,strlen(sbuff),0);
-
-        if(recv(sock_desc,rbuff,MAX_SIZE,0)==0)
-            printf("Error");
-        else
-           fputs(rbuff,stdout);
-
-        bzero(rbuff,MAX_SIZE);
-        sleep(2);
-    }
-    close(sock_desc);
-    return 0;
+	// Suspend execution of
+	// calling thread
+	pthread_join(tid, NULL);
 }
