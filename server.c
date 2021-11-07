@@ -132,6 +132,24 @@ void process_client(int id, int socket){
 }
 
 int main(){
+    /*japielik argc un argv*/
+    /*if (argc < 1){
+        printf("not enough arguments \n");
+        return -1;
+    }
+
+    int i = 0;
+    if (strncmp("-p=", argv[1],3) < 0){
+        printf("wrong parameter PORT %s \n", argv[2]);
+        return -1;
+    }
+
+    char* realport;
+    char *ranodmport = argv[2];
+    char* found;
+    for (i =0; i< 2; i++) realport = strsep(&ranodmport,"=");
+    port = atoi(realport);
+*/
     int pid = 0;
     printf("SERVER started!\n");
     get_shared_memory();

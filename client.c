@@ -17,9 +17,7 @@ int my_socket;
 
 void *connection_handler(void *socket_desc);
 
-void *connection_handler(void *socket_desc){
-    printf("jolo");
-    int client_request = *((int*)args);
+void *connection_handler(void *args){
     if(connect(my_socket,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0)
     {
         printf("ERROR connecting\n");
@@ -30,53 +28,10 @@ void *connection_handler(void *socket_desc){
             char inputs[256];
             scanf("%s", inputs);
             //strcat("\n", inputs);
-            send(my_socket, inputs, strlen(inputs), 0);
+            send(my_socket, inputs, sizeof(inputs), 0);
             /*read also some stuff - ja var nolasīt, tad var izprintet*/
         }
     }
-}
-
-void * clientThread(void *arg)
-{
-  printf("In thread\n");
-  char message[1000];
-  char buffer[1024];
-  int clientSocket;
-  struct sockaddr_in serverAddr;
-  socklen_t addr_size;
-
-  // Create the socket.
-  clientSocket = socket(PF_INET, SOCK_STREAM, 0);
-
-  //Configure settings of the server address
- // Address family is Internet
-  serverAddr.sin_family = AF_INET;
-
-  //Set port number, using htons function
-  serverAddr.sin_port = htons(port);
-
- //Set IP address to localhost
-  serverAddr.sin_addr.s_addr = host;
-  memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
-
-    //Connect the socket to the server using the address
-    addr_size = sizeof serverAddr;
-    connect(clientSocket, (struct sockaddr *) &serverAddr, addr_size);
-    strcpy(message,"Hello");
-
-   if( send(clientSocket , message , strlen(message) , 0) < 0)
-    {
-            printf("Send failed\n");
-    }
-
-    //Read the message from the server into the buffer
-    if(recv(clientSocket, buffer, 1024, 0) < 0)
-    {
-       printf("Receive failed\n");
-    }
-    //Print the received message
-    printf("Data received: %s\n",buffer);
-    close(clientSocket);
     pthread_exit(NULL);
 }
 
@@ -125,7 +80,7 @@ int main(int argc, char ** argv){
     *socketname = my_socket;
 
     pthread_t tred;
-    if (pthread_create(&tred, NULL, clientThread, NULL) == 0); pthread_join(tred, 0);
+    if (pthread_create(&tred, NULL, connection_handler, socketname) == 0); pthread_join(tred, 0);
 
     return 0;
 }
