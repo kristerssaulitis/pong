@@ -6,25 +6,39 @@
 #include <netdb.h>
 #include "hw1.h"
 
-#define HOST "localhost"
-#define PORT 12331
+char* host;
+char* port;
 
-char* inputCheck(char* argv){
+void sender(){
+
+}
+
+char* inputCheck(char*  haystack, char* needle ){
     char* result;
-    if (str_length(argv) == 6){
-
+    int i = 0;
+    char* ret = strstr(haystack, needle);
+    /*printf("this is ret %s", ret);*/
+    if (strcmp(ret, "-a=") >0 || strcmp(ret, "-p=") >0){
+        for (i = 2; i< strlen(haystack); i++){
+            result[i-2] = haystack[i];
+        }
+        return result;
     }
 }
 
 int main(int argc, char ** argv){
+
     if (argc < 3){
         printf("not enough arguments \n");
         return -1;
     }
-    char* host;
-    char* port;
-    host = inputCheck(argv[1]);
-    port = inputCheck(argv[2]);
+    if (strcmp("client", argv[1]) < 0){
+        printf("wrong input, client not called\n");
+    }
+    host = inputCheck(argv[2], "-a=");
+    port = inputCheck(argv[3], "-p=");
+
+    printf("this is host :%s and this is port:%s", host, port);
 
 
     int my_socket = 0;
@@ -40,21 +54,23 @@ int main(int argc, char ** argv){
         printf("SOCKET ERROR\n");
         return -1;
     }
-    // threading
+    /* threading*/
 
-    // if(connect(my_socket,(struct  sockaddr *) &remote_address,sizeof(remote_address)) < 0)
-    // {
-    //     printf("ERROR connecting\n");
-    //     return -1;
-    // }else{
-    //     printf("good connection\n");
-    //     while(1){
-    //         char inputs[256];
-    //         scanf("%s", inputs);
-    //         //strcat("\n", inputs);
-    //         send(my_socket, inputs, strlen(inputs), 0);
-    //     }
-    // }
+    /*
+     if(connect(my_socket,(struct  sockaddr *) &remote_address,sizeof(remote_address)) < 0)
+    {
+        printf("ERROR connecting\n");
+        return -1;
+    }else{
+        printf("good connection\n");
+        while(1){
+            char inputs[256];
+            scanf("%s", inputs);
+            //strcat("\n", inputs);
+            send(my_socket, inputs, strlen(inputs), 0);
+        }
+    }
+    */
 
     return 0;
 }
