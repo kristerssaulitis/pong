@@ -35,9 +35,7 @@ void *connection_handler(void* args){
             scanf("%s",inputs);
             send(my_sock,inputs,strlen(inputs),0);
             sleep(1);
-            if (read(my_sock, buffer, MAXSIZE-1)>0){
-                printf("buffer: %s", buffer);
-            }
+            if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
         }
     }
     return NULL;
