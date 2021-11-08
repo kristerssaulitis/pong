@@ -36,6 +36,7 @@ void *connection_handler(void* args){
             send(my_sock,inputs,strlen(inputs),0);
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
+            fflush(stdout);
         }
     }
     return NULL;
