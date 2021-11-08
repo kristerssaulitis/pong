@@ -11,7 +11,7 @@
 #include <netdb.h>
 
 #define MAXSIZE 1024
-/**/
+
 char* host;
 int port;
 struct sockaddr_in remote_address;
@@ -31,7 +31,7 @@ void *connection_handler(void* args){
         memset(buffer, 0, MAXSIZE);
         printf("good connection\n");
         while(1){
-
+            strcpy(buffer, "");
             scanf("%s",inputs);
             send(my_sock,inputs,strlen(inputs),0);
             sleep(1);
