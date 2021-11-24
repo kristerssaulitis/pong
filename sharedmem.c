@@ -83,7 +83,7 @@ int main(){
 
 
 void listener(int id, int socket){
-    char in[1];
+    char in[256];
     char out[1000];
     char c;
     int sepCounter = 0;
@@ -107,7 +107,7 @@ void listener(int id, int socket){
             else if(c=='*') c = '?';
         }
         else {
-
+            /*read read read read read */
         }
     }
 
