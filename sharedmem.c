@@ -79,9 +79,14 @@ void get_shared_memory(){
 int main(){
     get_shared_memory();
 }
-
-
-
+/*
+void checksum(int length, char* packet){
+    char checksum = 0;
+    for(int i=0; i<length; i++){
+        checksum ^= packet[i];
+    }
+}
+*/
 void listener(int id, int socket){
     char in[256];
     char out[1000];
