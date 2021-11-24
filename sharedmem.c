@@ -1,17 +1,16 @@
 #include <errno.h>
 #include <sys/mman.h>
-#include "hw1.h"
 #include <sys/types.h>
 #include <stdio.h>
 
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 4
 #define PORT 12336
-#define SHARED_MEMORY_SIZE 500
 
-struct Packet* shared_memory = NULL;
-void* memory_chunk = NULL;
+void* shared_memory = NULL;
+struct Ball* shared_balls = NULL;
+struct Client* shared_clients = NULL;
 
-struct Data {
+struct Client {
     /*join client*/
     char name[20];
     /*lobby server*/
@@ -23,8 +22,7 @@ struct Data {
     /*game server ari int status*/
     /*player ready = empty*/
     /*game state server*/
-    int windowWidth;
-    int windowHeight;
+
     int score;
 
     int gameType;
@@ -34,11 +32,6 @@ struct Data {
     int playerWidth1;
     int playerColor1;
 
-    float ballX;
-    float ballY;
-    int ballRadius;
-    int ballColor;
-    int powerUpCount;
 
 /*game state server*/
     int upKey;
@@ -46,26 +39,39 @@ struct Data {
     int leftKey;
     int rightKey;
 
-
 /*check status ik pec 5 sec*/
 /*game end server*/
     int gameDuration;
 };
-
-struct Packet {
-    int PN;
-    int packetID;
-    long packetSize;
-    char checkSum;
-    struct Data;
-    char seperator[2];
+struct Ball {
+    float ballX;
+    float ballY;
+    int ballRadius;
+    int ballColor;
+    int powerUpCount;
+    int windowWidth;
+    int windowHeight;
 };
 
+struct Ball baller;
+
+char * createPackage (){
+
+}
+
+int PN;
+int packetID;
+long packetSize;
+char checkSum;
+    /* char seperator[2]; */
+
 void get_shared_memory(){
-    if(shared_memory = mmap(NULL, SHARED_MEMORY_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0)){
-        memory_chunk = (void*)shared_memory;
-        memory_chunk = (memory_chunk + SHARED_MEMORY_SIZE - 1 - MAX_CLIENTS);
-        printf("succesfully created buffer\n");
+    int sizeofthings = sizeof(struct Ball)+ MAX_CLIENTS*sizeof(struct Client);
+    if(shared_memory = mmap(NULL, sizeofthings, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0)){
+        shared_balls = (struct Ball*) shared_memory;
+        shared_clients = (struct Client*) (sizeof(shared_balls) + shared_memory);
+
+        printf("succesfully created buffer - balls and\n");
         return 0;
     }else{
         printf("could not mmap allocate MAXSIZE\n");
