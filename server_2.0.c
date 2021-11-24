@@ -174,7 +174,7 @@ void process_client(int id, int socket){
     printf("Process client id = %d, socket= %d\n", id, socket);
     printf("Client count %d\n", *client_count);
 
-    /*maybe here start the thread for listener?*/
+    /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
 /*
     while(1){
         read(socket, in, 1);
@@ -198,6 +198,7 @@ void process_client(int id, int socket){
 }
 
 
+/*   ^^   process client is used in start network and it is started as separet process for reading socket so just write what you would write in listener directly into process_client        */
 /*
 void listener(int id, int socket){
     char in[256];
