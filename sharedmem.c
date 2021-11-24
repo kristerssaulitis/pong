@@ -8,7 +8,7 @@
 
 void* shared_memory = NULL;
 struct Ball* shared_balls = NULL;
-struct Client* shared_clients = NULL;
+struct Client* shared_clients= NULL;
 
 struct Client {
     /*join client*/
@@ -55,10 +55,6 @@ struct Ball {
 
 struct Ball baller;
 
-char * createPackage (){
-
-}
-
 int PN;
 int packetID;
 long packetSize;
@@ -82,4 +78,37 @@ void get_shared_memory(){
 
 int main(){
     get_shared_memory();
+}
+
+
+
+void listener(int id, int socket){
+    char in[1];
+    char out[1000];
+    char c;
+    int sepCounter = 0;
+
+    while(c=read()){
+        if(c=='-'){
+            c=read();
+            if(c=='-'){
+                sepCounter++;
+                /*DO new packet */
+                if (sepCounter==2){
+                    /* end the current one;*/
+                }
+            } else{
+                c = '-';
+            }
+        }
+        if(c=='?'){
+            c=read();
+            if(c=='-') c = '-';
+            else if(c=='*') c = '?';
+        }
+        else {
+
+        }
+    }
+
 }
