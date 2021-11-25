@@ -17,6 +17,13 @@ int port;
 struct sockaddr_in remote_address;
 
 void *connection_handler(void* socket_desc);
+void addSep( char * buf);
+void addInt(int num,  char * buf);
+void addLong(long num,  char * buf);
+void add_string(char* str,  char* buf, int count);
+char checksum(int length, char* packet);
+ char * makePacket1( char* pointer, char* Username);
+
 
 void *connection_handler(void* args){
     char inputs[256];
@@ -32,11 +39,13 @@ void *connection_handler(void* args){
         printf("good connection\n");
         while(1){
             strcpy(buffer, "");
-            scanf("%s",inputs);
-            /*strcpy(inputs, "-- nfdnvakjnfvjkdnfbkanf --");*/
+            /*scanf("%s",inputs);*/
+            makePacket1(inputs, "ndfvna");
+            
             send(my_sock,inputs,strlen(inputs),0);
-            printf("hey, yolo, nemiz %s", inputs);
+            /*printf("hey, yolo, nemiz %s", inputs);*/
             fflush(stdout);
+            memset(inputs, 0, 256);
             /*
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
@@ -46,6 +55,84 @@ void *connection_handler(void* args){
     }
     return NULL;
 }
+
+
+
+
+/*Packet functions*/
+
+
+ char * makePacket1( char* pointer,char* Username){
+    int PN = 1;
+     char* buf = pointer;
+
+    addSep(buf);
+    printf("yolo, 2.0 %s      ", buf);
+    addInt(PN, &buf[2]);
+    printf("yolo, 3.0 %s      ", buf);
+    addInt(1, &buf[6]);
+    printf("yolo, 4.0 %s      ", buf);
+    addLong(20, &buf[10]);
+    printf("yolo, 5.0 %s      ", buf);
+    char checkSum_Char = checksum( 20, Username);
+    printf("yolo, 6.0 %s      ", buf);
+    add_string(&checkSum_Char, &buf[18], 1);
+    printf("yolo, 7.0 %s      ", buf);
+    add_string(Username, &buf[19], strlen(Username));
+    printf("yolo, 8.0 %s      ", buf);
+    addSep(&buf[39]);
+    printf("yolo, 9.0 %s      ", buf);
+    buf[41] = '\0';
+    printf("yolo, 10.0 %s      ", buf);
+    return buf;
+}
+
+
+
+
+
+
+
+/*packet asembly helper functions*/
+
+void addSep( char * buf){
+    buf[0] = '-';
+    buf[1] = '-';
+}
+
+void addInt(int num,  char * buf){
+    int i = 0;
+    for(i = 0; i < sizeof(int); i++){
+        buf[i] = (num >> (sizeof(int)-1-i)*8) & 0xff;
+    }
+}
+
+void addLong(long num,  char * buf){
+    int i = 0;
+    buf[0] = num & 0xff;
+    for(i = 0; i < sizeof(long); i++){
+        buf[i] = (num >> (sizeof(long)-1-i)*8) & 0xff;
+    }
+}
+
+void add_string(char* str,  char* buf, int count){
+    int i = 0;
+    for(i = 0; i < count; i++){
+        buf[i] = str[i];
+    }
+}
+
+char checksum(int length, char* packet){
+    char checksum = 0;
+    for(int i=0; i<length; i++){
+        checksum ^= packet[i];
+    }
+    return checksum;
+}
+/*______________________________________________________________________________________-*/
+
+
+
 
 int main(int argc, char ** argv){
 
