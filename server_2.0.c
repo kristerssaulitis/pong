@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <inttypes.h>
+#include <ctype.h>
 
 /*global constants and varieables*/
 #define MAX_CLIENTS 4
@@ -109,6 +111,45 @@ char checksum(int length, char* packet){
     return checksum;
 }
 
+int is_little_endian_system(){
+    volatile uint32_t i=0x01234567;
+     return (*((uint8_t*)(&i))) == 0x67; 
+} 
+/* 1 = little, 0 = big*/
+
+void universal_store_int_as_bytes_big_endian(void* packet, int data){
+    int i; 
+    int s = sizeof(int); 
+    char* p = packet; 
+    for(i=0; i<s; i++){ 
+        p[i] = (data >> (s-i-1)*8) & 0xFF;
+    }
+}
+
+void universal_store_int_as_bytes_little_endian(void* packet, int data){
+    int i; 
+    int s = sizeof(int); 
+    char* p = packet; 
+    for(i=0; i<s; i++){ 
+        p[i] = (data >> (i*8)) & 0xFF;
+    }
+}
+ 
+
+
+char printable_char(char c){
+    if(isprint(c) != 0 ) return c;
+    return ' ';
+}
+
+void print_bytes(void* packet, int count){
+    int i;
+    char *p = (char*) packet;
+    
+}
+
+
+
     /*Conection*/
 void start_network(){
     int main_socket;
@@ -173,6 +214,7 @@ void start_network(){
 
 void unwrapping(char * out){
     int i = 0;
+
     /*
     while(out[i] != '-'){
         printf("%c", out[i]);
