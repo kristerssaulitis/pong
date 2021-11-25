@@ -121,12 +121,6 @@ char checksum(int length, char* packet){
     return checksum;
 }
 
-int is_little_endian_system(){
-    volatile uint32_t i=0x01234567;
-     return (*((uint8_t*)(&i))) == 0x67;
-}
-/* 1 = little, 0 = big*/
-
 void universal_store_int_as_bytes_big_endian(void* packet, int data){
     int i;
     int s = sizeof(int);
