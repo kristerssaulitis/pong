@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <inttypes.h>
 
 /*global constants and varieables*/
 #define MAX_CLIENTS 4
@@ -171,6 +172,13 @@ void start_network(){
     }
 }
 
+int is_little_endian_system( ){
+    volatile uint32_t i=0x01234567;
+    return (*((uint8_t*)(&i)));
+    /*1 = little, 0 = BIG*/
+}
+
+
 void unwrapping(char * out){
     int i = 0;
     /*
@@ -182,8 +190,13 @@ void unwrapping(char * out){
     */
    printf("might work???%s", out);
    fflush(stdout);
+/*endieness*/
+if (is_little_endian_system() == 0){
+
+} else {
+
+}
 /*
-endieness
 packet number
 checksum
 escaping
