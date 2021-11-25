@@ -14,7 +14,7 @@ char temp_str[256] = "";
             sprintf(out, "%s", temp_str);
             write(socket,out,strlen(out));
             printf("CLIENT %d read char %c\n", id , (char)in[0]);
-            
+
     }
 
 
@@ -29,3 +29,24 @@ char temp_str[256] = "";
             shared_data[id] = in[0];
         }
     }
+
+    /*
+    while(1){
+        read(socket, in, 1);
+        if ((int)in[0] > 13){
+            int i = 0;
+            char temp_str[256];
+            shared_clients[MAX_CLIENTS + id] += 1;
+            for(i = 0; i < (shared_data[MAX_CLIENTS + id]); i++){
+                    temp_str[i] = (char)in[0];
+                    */
+                    /*printf("string in making -> %s\n", temp_str);*/
+                    /*
+                }
+            temp_str[shared_data[MAX_CLIENTS + id]] = '\0';
+            sprintf(out,"%s", temp_str);
+            write(socket,out,strlen(out));
+            printf("CLIENT %d read char %i\n", id , (int)in[0]);
+        }
+    }
+*/

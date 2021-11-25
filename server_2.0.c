@@ -71,7 +71,7 @@ struct Ball {
 
 
 
-/*Networking functions*/        
+/*Networking functions*/
 /*_____________________________________________________________________________________________________________*/
 
     /*shared memory*/
@@ -167,73 +167,73 @@ void start_network(){
     }
 }
 
+void unwrapping(char * out){
+/*
+endieness
+packet number
+checksum
+escaping
+    if(c=='?'){
+        c=read(socket, in, 1);
+        if(c=='-') c = '-';
+        else if(c=='*') c = '?';
+    }
+*/
+}
+
 void process_client(int id, int socket){
     char in[1];
     char out[1000];
-
-    printf("Process client id = %d, socket= %d\n", id, socket);
-    printf("Client count %d\n", *client_count);
-
-    /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
-/*
-    while(1){
-        read(socket, in, 1);
-        if ((int)in[0] > 13){
-            int i = 0;
-            char temp_str[256];
-            shared_clients[MAX_CLIENTS + id] += 1;
-            for(i = 0; i < (shared_data[MAX_CLIENTS + id]); i++){
-                    temp_str[i] = (char)in[0];
-                    */
-                    /*printf("string in making -> %s\n", temp_str);*/
-                    /*
-                }
-            temp_str[shared_data[MAX_CLIENTS + id]] = '\0';
-            sprintf(out,"%s", temp_str);
-            write(socket,out,strlen(out));
-            printf("CLIENT %d read char %i\n", id , (int)in[0]);
-        }
-    }
-*/
-}
-
-
-/*   ^^   process client is used in start network and it is started as separet process for reading socket so just write what you would write in listener directly into process_client        */
-/*
-void listener(int id, int socket){
-    char in[256];
-    char out[1000];
     char c;
     int sepCounter = 0;
-
-    while(c=read()){
-        if(c=='-'){
-            c=read();
+    int inpacket = 1;
+    /*0 = ja', 1 = nē*/
+    int i = 0;
+/*-- nfdnvakjnfvjkdnfbkanf -- */
+/*šeit no iepriekšājā paliek -- abcdejdirst, šeit no nākamā sākas -- */
+/*-- nfdnvakjnfvjkdnfbkanf -- */
+    while(c=read(socket, in, 1)){
+        if (inpacket == 0){
             if(c=='-'){
-                sepCounter++;
-                /*DO new packet */
-/*
-                if (sepCounter==2){
-                    /* end the current one;*/
-/*
+                c=read(socket, in, 1);
+                if(c=='-'){
+                    ++sepCounter;
+                    /*DO new packet */
+                        if (sepCounter==2){
+                            sepCounter = 0;
+                            inpacket = 1;
+                            /* end the current one;*/
+                            break;
+                        }
+                    } else {
+                        out[i] = '-';
+                        out[i+1] = c;
+                        i++;
+                    }
+                } else {
+                    /*read read read read read */
+                    out[i] = c;
                 }
-            } else{
-                c = '-';
+                i++;
+            } else {
+                if(c=='-'){
+                    c=read(socket, in, 1);
+                    if(c=='-'){
+                        inpacket = 0;
+                        /*DO new packet */
+                    }
             }
         }
-        if(c=='?'){
-            c=read();
-            if(c=='-') c = '-';
-            else if(c=='*') c = '?';
-        }
-        else {
-            /*read read read read read */
-/*
-        }
+    /*nfdnvakjnfvjkdnfbkanf --  ->šis viss tagad ir out'ā*/
+    unwrapping(out);
+
     }
+    /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
 
 }
-*/
+
+/*   ^^   process client is used in start network and it is started as separet process for reading socket so just write what you would write in listener directly into process_client        */
+
 /*_____________________________________________________________________________________________________________*/
 
 
@@ -246,7 +246,7 @@ void gameloop(){
     while(1){
         for(i = 0; i<*client_count; i++){
             /*
-            shared_clients[MAX_CLIENTS +i]; 
+            shared_clients[MAX_CLIENTS +i];
             shared_clients[i] = 0;
             */
         }
