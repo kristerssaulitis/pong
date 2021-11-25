@@ -168,6 +168,11 @@ void start_network(){
 }
 
 void unwrapping(char * out){
+    printf("yolo, this is out now");
+    int i = 0;
+    for (i; i< 1000; i++){
+        printf("this is really out %c", out[i]);
+    }
 /*
 endieness
 packet number
@@ -192,41 +197,40 @@ void process_client(int id, int socket){
 /*-- nfdnvakjnfvjkdnfbkanf -- */
 /*šeit no iepriekšājā paliek -- abcdejdirst, šeit no nākamā sākas -- */
 /*-- nfdnvakjnfvjkdnfbkanf -- */
-    while(c=read(socket, in, 1)){
-        if (inpacket == 0){
-            if(c=='-'){
-                c=read(socket, in, 1);
-                if(c=='-'){
-                    ++sepCounter;
-                    /*DO new packet */
-                        if (sepCounter==2){
-                            sepCounter = 0;
-                            inpacket = 1;
-                            /* end the current one;*/
-                            break;
-                        }
-                    } else {
-                        out[i] = '-';
-                        out[i+1] = c;
-                        i++;
-                    }
-                } else {
-                    /*read read read read read */
-                    out[i] = c;
-                }
-                i++;
-            } else {
+    while(1){
+        while(c=read(socket, in, 1)){
+            if (inpacket == 0){
                 if(c=='-'){
                     c=read(socket, in, 1);
                     if(c=='-'){
-                        inpacket = 0;
-                        /*DO new packet */
+                        ++sepCounter;
+                            if (sepCounter==2){
+                                sepCounter = 0;
+                                inpacket = 1;
+                                /*nfdnvakjnfvjkdnfbkanf --  ->šis viss tagad ir out'ā*/
+                                unwrapping(out);
+                                memset(out, 0, 255);
+                                break;
+                            }
+                        } else {
+                            out[i] = '-';
+                            out[i+1] = c;
+                            i++;
+                        }
+                    } else {
+                        /*read read read read read */
+                        out[i] = c;
                     }
+                    i++;
+                } else {
+                    if(c=='-'){
+                        c=read(socket, in, 1);
+                        if(c=='-'){
+                            inpacket = 0;
+                        }
+                }
             }
         }
-    /*nfdnvakjnfvjkdnfbkanf --  ->šis viss tagad ir out'ā*/
-    unwrapping(out);
-
     }
     /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
 
