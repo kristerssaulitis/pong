@@ -102,6 +102,16 @@ void get_shared_memory(){
 
 }
 
+void direct_copy_data_as_bytes(void* packet, void* data, int size){ 
+    /* Different results on different thusam machines, But can store any data type!*/
+    int i; 
+    char* p = packet; 
+    char* d = data; 
+    for(i=0;i<size;i++){ 
+        p[i] = d[i];
+    }
+}
+
     /*packet helper functions*/
 char checksum(int length, char* packet){
     char checksum = 0;
@@ -134,8 +144,6 @@ void universal_store_int_as_bytes_little_endian(void* packet, int data){
         p[i] = (data >> (i*8)) & 0xFF;
     }
 }
- 
-
 
 char printable_char(char c){
     if(isprint(c) != 0 ) return c;
@@ -145,7 +153,25 @@ char printable_char(char c){
 void print_bytes(void* packet, int count){
     int i;
     char *p = (char*) packet;
-    
+    if(count > 999){
+        printf("Cannot print more than 999 chars\n");
+        return;
+    }
+    printf("printing %d bytes... \n", count);
+    printf("[NPK] [C] [HEX] [DEC] [BINARY]\n");
+    printf("===============================\n");
+    for (i = 0; i< count; i++){
+        printf("%3d | %c | %02X | %c%c%c%c%c%c%c%c\n", i , printable_char(p[i]), p[i], p[i],
+        p[i] & 0x80 ? '1' : '0',
+        p[i] & 0x40 ? '1' : '0',
+        p[i] & 0x20 ? '1' : '0',
+        p[i] & 0x10 ? '1' : '0',
+        p[i] & 0x08 ? '1' : '0',
+        p[i] & 0x04 ? '1' : '0',
+        p[i] & 0x02 ? '1' : '0',
+        p[i] & 0x01 ? '1' : '0'
+        );
+    }
 }
 
 
@@ -214,18 +240,15 @@ void start_network(){
 
 void unwrapping(char * out){
     int i = 0;
+    printf("might work???%s", out);
+    fflush(stdout);
+/*endieness  -> if (is_little_endian_system()== 1){} else {}*/
+if (is_little_endian_system()== 1){
+    /*convert to big*/
+    printf("small small endian");
+}
 
-    /*
-    while(out[i] != '-'){
-        printf("%c", out[i]);
-        fflush(stdout);
-        i++;
-    }
-    */
-   printf("might work???%s", out);
-   fflush(stdout);
 /*
-endieness
 packet number
 checksum
 escaping
