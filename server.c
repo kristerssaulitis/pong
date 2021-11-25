@@ -149,8 +149,7 @@ int main(int argc, char** argv){
     char *ranodmport = argv[1];
     for (i =0; i< 2; i++) realport = strsep(&ranodmport,"=");
     port = atoi(realport);
-    printf("tiek līdz šejienei");
-    fflush(stdout);
+
     int pid = 0;
     printf("SERVER started!\n");
     get_shared_memory();

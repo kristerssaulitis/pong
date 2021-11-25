@@ -135,7 +135,7 @@ void start_network(){
         exit (1);
     }
     printf("Main socket is listening");
-
+    /*fflush(stdout);*/
     while(1){
         int new_client_id = 0;
         int cpid = 0;
@@ -154,6 +154,8 @@ void start_network(){
             close(main_socket);
             cpid = fork();
             if(cpid == 0){
+
+                /*fflush(stdout);*/
                 process_client(new_client_id, client_socket);
                 exit(0);
             }else{
@@ -168,10 +170,11 @@ void start_network(){
 }
 
 void unwrapping(char * out){
-    printf("yolo, this is out now");
+    printf("this is really out yolo");
     int i = 0;
     for (i; i< 10; i++){
         printf("this is really out %c", out[i]);
+        fflush(stdout);
     }
 /*
 endieness
@@ -189,7 +192,6 @@ escaping
 void process_client(int id, int socket){
     char in[1];
     char out[1000];
-    char c;
     int sepCounter = 0;
     int inpacket = 1;
     /*0 = ja', 1 = nē*/
@@ -198,34 +200,43 @@ void process_client(int id, int socket){
 /*šeit no iepriekšājā paliek -- abcdejdirst, šeit no nākamā sākas -- */
 /*-- nfdnvakjnfvjkdnfbkanf -- */
     while(1){
-        while(c=read(socket, in, 1)){
+        while(1){
+            read(socket, in, 1);
+
             if (inpacket == 0){
-                if(c=='-'){
-                    c=read(socket, in, 1);
-                    if(c=='-'){
+                if(in[0]=='-'){
+                    read(socket, in, 1);
+                    if(in[0]=='-'){
                         ++sepCounter;
+                        printf("\n do you even listen 5 .0 %c \n ", in[0]);
                             if (sepCounter==2){
                                 sepCounter = 0;
                                 inpacket = 1;
                                 /*nfdnvakjnfvjkdnfbkanf --  ->šis viss tagad ir out'ā*/
+
                                 unwrapping(out);
                                 memset(out, 0, 255);
                                 break;
                             }
                         } else {
                             out[i] = '-';
-                            out[i+1] = c;
+                            out[i+1] = in[0];
                             i++;
                         }
                     } else {
                         /*read read read read read */
-                        out[i] = c;
+                        printf("\n do you even listen daudaudzdua .0 %c \n ", in[0]);
+                        out[i] = in[0];
                     }
                     i++;
                 } else {
-                    if(c=='-'){
-                        c=read(socket, in, 1);
-                        if(c=='-'){
+                    printf("\n do you even listen 2.0 %c \n ", in[0]);
+                    if(in[0]=='-'){
+                        read(socket, in, 1);
+                        if(in[0]=='-'){
+                            printf("\n do you even listen 4 .0 %c \n ", in[0]);
+                            fflush(stdout);
+                            ++sepCounter;
                             inpacket = 0;
                         }
                 }
