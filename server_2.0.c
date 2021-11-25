@@ -69,7 +69,7 @@ struct Ball {
 };
 
 struct Join{
-    
+
 };
 
 
@@ -235,14 +235,6 @@ void start_network(){
     }
 }
 
-<<<<<<< HEAD
-int is_little_endian_system( ){
-    volatile uint32_t i=0x01234567;
-    return (*((uint8_t*)(&i)));
-    /*1 = little, 0 = BIG*/
-}
-
-=======
 int getPacketNumber(unsigned char* packet){
     int val = 0;
 
@@ -288,7 +280,6 @@ long getPacketSize (unsigned char* packet){
 
 
 
->>>>>>> 97d5c0650bc9a7139e5575aa2c79bde9769099c2
 
 void unwrapping(char * out){
     int i = 0;
