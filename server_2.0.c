@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <inttypes.h>
+#include <ctype.h>
 
 /*global constants and varieables*/
 #define MAX_CLIENTS 4
@@ -101,6 +102,16 @@ void get_shared_memory(){
 
 }
 
+void direct_copy_data_as_bytes(void* packet, void* data, int size){
+    /* Different results on different thusam machines, But can store any data type!*/
+    int i;
+    char* p = packet;
+    char* d = data;
+    for(i=0;i<size;i++){
+        p[i] = d[i];
+    }
+}
+
     /*packet helper functions*/
 char checksum(int length, char* packet){
     char checksum = 0;
@@ -109,6 +120,61 @@ char checksum(int length, char* packet){
     }
     return checksum;
 }
+
+int is_little_endian_system(){
+    volatile uint32_t i=0x01234567;
+     return (*((uint8_t*)(&i))) == 0x67;
+}
+/* 1 = little, 0 = big*/
+
+void universal_store_int_as_bytes_big_endian(void* packet, int data){
+    int i;
+    int s = sizeof(int);
+    char* p = packet;
+    for(i=0; i<s; i++){
+        p[i] = (data >> (s-i-1)*8) & 0xFF;
+    }
+}
+
+void universal_store_int_as_bytes_little_endian(void* packet, int data){
+    int i;
+    int s = sizeof(int);
+    char* p = packet;
+    for(i=0; i<s; i++){
+        p[i] = (data >> (i*8)) & 0xFF;
+    }
+}
+
+char printable_char(char c){
+    if(isprint(c) != 0 ) return c;
+    return ' ';
+}
+
+void print_bytes(void* packet, int count){
+    int i;
+    char *p = (char*) packet;
+    if(count > 999){
+        printf("Cannot print more than 999 chars\n");
+        return;
+    }
+    printf("printing %d bytes... \n", count);
+    printf("[NPK] [C] [HEX] [DEC] [BINARY]\n");
+    printf("===============================\n");
+    for (i = 0; i< count; i++){
+        printf("%3d | %c | %02X | %c%c%c%c%c%c%c%c\n", i , printable_char(p[i]), p[i], p[i],
+        p[i] & 0x80 ? '1' : '0',
+        p[i] & 0x40 ? '1' : '0',
+        p[i] & 0x20 ? '1' : '0',
+        p[i] & 0x10 ? '1' : '0',
+        p[i] & 0x08 ? '1' : '0',
+        p[i] & 0x04 ? '1' : '0',
+        p[i] & 0x02 ? '1' : '0',
+        p[i] & 0x01 ? '1' : '0'
+        );
+    }
+}
+
+
 
     /*Conection*/
 void start_network(){
@@ -181,21 +247,14 @@ int is_little_endian_system( ){
 
 void unwrapping(char * out){
     int i = 0;
-    /*
-    while(out[i] != '-'){
-        printf("%c", out[i]);
-        fflush(stdout);
-        i++;
-    }
-    */
-   printf("might work???%s", out);
-   fflush(stdout);
-/*endieness*/
-if (is_little_endian_system() == 0){
-
-} else {
-
+    printf("might work???%s", out);
+    fflush(stdout);
+/*endieness  -> if (is_little_endian_system()== 1){} else {}*/
+if (is_little_endian_system()== 1){
+    /*convert to big*/
+    printf("small small endian");
 }
+
 /*
 packet number
 checksum
