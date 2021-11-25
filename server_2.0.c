@@ -170,7 +170,7 @@ void start_network(){
 void unwrapping(char * out){
     printf("yolo, this is out now");
     int i = 0;
-    for (i; i< 1000; i++){
+    for (i; i< 10; i++){
         printf("this is really out %c", out[i]);
     }
 /*

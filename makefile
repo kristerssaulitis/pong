@@ -1,5 +1,7 @@
 all: server_2.0  client
 
+run: server_2.0.run  client.run
+
 server_2.0: server_2.0.o
 	gcc -Wall -std=gnu11 server_2.0.o -o server_2.0.exe
 
@@ -14,3 +16,9 @@ client.o: client.c
 
 clean:
 	rm *.o *.exe
+
+server_2.0.run:
+	./server_2.0 -p=12345
+
+client.run:
+	./client -a=localhost -p=12345
