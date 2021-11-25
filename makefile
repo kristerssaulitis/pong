@@ -1,19 +1,16 @@
-all: server  client
+all: server_2.0  client
 
-server: hw1.o server.o
-	gcc -Wall -std=gnu11 server.o hw1.o -o server.exe
+server_2.0: server_2.0.o
+	gcc -Wall -std=gnu11 server_2.0.o -o server_2.0.exe
 
-client: hw1.o client.o
-	gcc -Wall -std=gnu11 client.o hw1.o -o client.exe -lpthread
+client: client.o
+	gcc -Wall -std=gnu11 client.o -o client.exe -lpthread
 
-server.o: server.c
-	gcc -Wall -std=gnu11 -c server.c
+server_2.0.o: server_2.0.c
+	gcc -Wall -std=gnu11 -c server_2.0.c
 
 client.o: client.c
 	gcc -Wall -std=gnu11 -c client.c
-
-hw1.o: hw1.c  hw1.h
-	gcc -Wall -std=gnu11 -c hw1.c
 
 clean:
 	rm *.o *.exe

@@ -8,7 +8,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <sys/mman.h>
-#include "hw1.h"
+//#include "hw1.h"
 #include <sys/types.h>
 
 
