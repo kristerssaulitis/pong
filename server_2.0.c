@@ -112,6 +112,7 @@ char checksum(int length, char* packet){
     /*Conection*/
 void start_network(){
     int main_socket;
+    int opt_value = 1;
     struct sockaddr_in server_address;
     int client_socket;
     struct sockaddr_in client_address;
@@ -124,6 +125,7 @@ void start_network(){
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(port);
+    setsockopt(main_socket, SOL_SOCKET, SO_REUSEADDR, (const void*) &opt_value, sizeof(int));
 
     if(bind(main_socket, (struct sockaddr*) &server_address, sizeof(server_address)) < 0){
         printf("Error binding the main server socket!\n");
@@ -170,12 +172,16 @@ void start_network(){
 }
 
 void unwrapping(char * out){
-    printf("this is really out yolo");
     int i = 0;
-    for (i; i< 10; i++){
-        printf("this is really out %c", out[i]);
+    /*
+    while(out[i] != '-'){
+        printf("%c", out[i]);
         fflush(stdout);
+        i++;
     }
+    */
+   printf("might work???%s", out);
+   fflush(stdout);
 /*
 endieness
 packet number
@@ -200,6 +206,8 @@ void process_client(int id, int socket){
 /*šeit no iepriekšājā paliek -- abcdejdirst, šeit no nākamā sākas -- */
 /*-- nfdnvakjnfvjkdnfbkanf -- */
     while(1){
+        printf("gang gan gangangang");
+        fflush(stdout);
         while(1){
             read(socket, in, 1);
 
@@ -212,10 +220,10 @@ void process_client(int id, int socket){
                             if (sepCounter==2){
                                 sepCounter = 0;
                                 inpacket = 1;
-                                /*nfdnvakjnfvjkdnfbkanf --  ->šis viss tagad ir out'ā*/
-
+                                /*nfdnvakjnfvjkdnfbkanf  ->šis viss tagad ir out'ā*/
+                                out[i] = '\0';
                                 unwrapping(out);
-                                memset(out, 0, 255);
+                                memset(out, 0, 1000);
                                 break;
                             }
                         } else {

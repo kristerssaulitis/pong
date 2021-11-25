@@ -35,9 +35,13 @@ void *connection_handler(void* args){
             scanf("%s",inputs);
             /*strcpy(inputs, "-- nfdnvakjnfvjkdnfbkanf --");*/
             send(my_sock,inputs,strlen(inputs),0);
+            printf("hey, yolo, nemiz %s", inputs);
+            fflush(stdout);
+            /*
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
             fflush(stdout);
+            */
         }
     }
     return NULL;
