@@ -68,6 +68,9 @@ struct Ball {
     int windowHeight;
 };
 
+struct Join{
+    
+};
 
 
 
@@ -238,24 +241,68 @@ void start_network(){
     }
 }
 
+int getPacketNumber(unsigned char* packet){
+    int val = 0;
+
+    int j = 0;
+    int i;
+    for ( i = 3; i >=0; --i)
+    {
+        val += (packet[i] & 0xFF) << (8*j);
+        ++j;
+    }
+
+    return val;
+}
+
+int getPacketID (unsigned char* packet){
+    int val = 0;
+
+    int j = 0;
+    int i;
+    for ( i = 7; i >=4; --i)
+    {
+        val += (packet[i] & 0xFF) << (8*j);
+        ++j;
+    }
+
+    return val;
+}
+
+long getPacketSize (unsigned char* packet){
+    long val = 0;
+
+    int j = 0;
+    int i;
+    for ( i = 15; i >=8; --i)
+    {
+        val += (packet[i] & 0xFF) << (8*j);
+        ++j;
+    }
+
+    return val;
+}
+
+
+
+
+
 void unwrapping(char * out){
     int i = 0;
-    printf("might work???%s", out);
+    printf("might work???     :      %s \n", out);
     fflush(stdout);
 /*endieness  -> if (is_little_endian_system()== 1){} else {}*/
-if (is_little_endian_system()== 1){
-    /*convert to big*/
-    printf("small small endian");
-}
+
 
 /*
 packet number
 checksum
 escaping
-    if(c=='?'){
-        c=read(socket, in, 1);
-        if(c=='-') c = '-';
-        else if(c=='*') c = '?';
+    while(1){
+        if(out[i]=='?'){
+            if(c=='-') c = '-';
+            else if(c=='*') c = '?';
+        }
     }
 */
 }
