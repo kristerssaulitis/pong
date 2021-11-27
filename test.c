@@ -16,7 +16,7 @@ int main () {
 
 }
 
-unsigned char * makePacket1(char* Username){
+unsigned char * makeJoin(char* Username){
     int PN = 1;
     unsigned char* buf;
 
@@ -87,7 +87,7 @@ char checksum(int length, char* packet){
 
 
 
-unsigned char * makePacket1(unsigned char* pointer, char* Username){
+unsigned char * makeJoin(unsigned char* pointer, char* Username){
     
     unsigned char* buffer = pointer;
 

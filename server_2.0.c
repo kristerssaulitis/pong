@@ -26,6 +26,7 @@ struct Client *shared_clients = NULL;
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
 struct Client
 {
+    int PN;
     /*join client*/
     char name[20];
     /*lobby server*/
@@ -68,13 +69,62 @@ struct Ball
     int windowHeight;
 };
 
-struct Join
-{
-};
 
 /*Networking functions*/
 /*_____________________________________________________________________________________________________________*/
 
+
+/*packet functions*/
+/*_____________________________________________________________________________________________________________*/
+
+int makeLobby(char* pointer, int status, char* error, int id){
+    /*
+    char* buf = pointer;
+    int PN = shared_clients[id].PN;
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(2, &buf[6]);
+    addLong(1, &buf[10]);
+    char checkSum_Char = checksum( 1, error);
+    add_string(&checkSum_Char, &buf[18], 1);
+    add_string(error, &buf[19], strlen(error));
+    addSep(&buf[20]);
+    return 22;
+    */
+}
+
+int makePlayerQueue(char* pointer, int status){
+
+}
+
+int makeGameReady(char* pointer, int status){
+
+}
+
+int makeGameState(
+    char* pointer, int windowWidth, int windowHeight, int scoreTeam1, int scoreTeam2, 
+    int gameType, float ballX, float ballY, int ballRadius, int ballColor, int powerUpCount,
+
+    float playerX1, float playerY1, int playerHeight1, int playerWidth1, int playerColor1,
+    float playerX2, float playerY2, int playerHeight2, int playerWidth2, int playerColor2,
+    float playerX3, float playerY3, int playerHeight3, int playerWidth3, int playerColor3,
+    float playerX4, float playerY4, int playerHeight4, int playerWidth4, int playerColor4,
+
+    int ID1,  float powerUpX1, float powerUpY1, int powerUpWidth1, int powerUpHeight1,
+    int ID2,  float powerUpX2, float  powerUpY2, int powerUpWidth2, int powerUpHeight2,
+    int ID3, float powerUpX3, float powerUpY3, int powerUpWidth3, int powerUpHeight3
+    ){
+
+}
+
+int makeGameEnd (char* pointer, int status, char* error, int playerTeamScore, int enemyTeamScore,
+    int gameDuration, char* mvp, char* name1, int numberOfGoals1, char* name2, int numberOfGoals2,
+    char *name3, int numberOfGoals3, char* name4, int numberOfGoals4
+){
+
+}
+/*pretty functions*/
+/*_____________________________________________________________________________________________________________*/
 /*shared memory*/
 void get_shared_memory()
 {
@@ -92,6 +142,7 @@ void get_shared_memory()
         for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++)
         {
             struct Client cl = shared_clients[c_iterator];
+            cl.PN = -1;
         }
 
         /*success & error messages*/
@@ -314,17 +365,65 @@ long getPacketSize(char *packet)
     return val;
 }
 
-void unwrapping(char *out)
+int getInt(char *packet)
 {
-    int PN = 0;
-    PN = getPacketNumber(out);
+    int val = 0;
+
+    int j = 0;
+    int i;
+    for (i = 3; i >= 0; --i)
+    {
+        val += (packet[i] & 0xFF) << (8 * j);
+        ++j;
+    }
+
+    return val;
+}
+
+long getLong(char *packet)
+{
+    long val = 0;
+
+    int j = 0;
+    int i;
+    for (i = 7; i >= 0; --i)
+    {
+        val += (packet[i] & 0xFF) << (8 * j);
+        ++j;
+    }
+
+    return val;
+}
+
+void unwrapping(char *out, int id)
+{
+    int PN = getPacketNumber(out);
+    if (PN < shared_clients[id].PN){
+        printf("old packet recieved\n");
+        return; /*will not process older packets*/
+    }
+
     int ID = getPacketID(out);
     int size = getPacketSize(out);
-    print_bytes(out, size); /*thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
+    char CS = checksum(size, &out[17]);
+    char CSP = out[16];
+    printf("checksum calculated %c\necieved calculated %c\n", CS, CSP);
+    if(CS != CSP){
+        printf("packet checksum is not correct\n");
+        return;
+    }
+    printf("valid packet\n");
 
+    /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
+    shared_clients[id].PN += 1;
     printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);
-
     fflush(stdout);
+
+
+
+
+
+    
     /*endieness  -> if (is_little_endian_system()== 1){} else {}*/
 
     /*
@@ -370,7 +469,7 @@ void process_client(int id, int socket)
 
                             out[i] = '\0';
                             i = 0;
-                            unwrapping(out);
+                            unwrapping(out, id);
                             memset(out, 0, 8);
                             break;
                         }

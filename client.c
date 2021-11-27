@@ -31,7 +31,7 @@ void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
-int makePacket1( char* pointer, char* Username);
+int makeJoin( char* pointer, char* Username);
 
 
 void *connection_handler(void* args){
@@ -55,8 +55,10 @@ void *connection_handler(void* args){
             /*scanf("%s",inputs);*/     /*input from terminal for tests*/
 
 
-            payload_size = makePacket1(inputs, "stuff");
+            /*payload_size = makeJoin(inputs, "qwertyuiopasdfghjklz");*/
+            payload_size = makeGameType(inputs, "1");
             print_bytes(inputs, payload_size);
+
 
 
             
@@ -87,7 +89,7 @@ void *connection_handler(void* args){
 
 /*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
 
-int makePacket1(char* pointer,char* Username){
+int makeJoin(char* pointer,char* Username){
     char* buf = pointer;
 
     addSep(buf);
@@ -101,41 +103,63 @@ int makePacket1(char* pointer,char* Username){
     return 41;
 }
 
-int makePacket2(char* pointer, ){
 
+
+int makeGameType(char* pointer, char* type){
+    char* buf = pointer;
+
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(3, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 1, type);
+    add_string(&checkSum_Char, &buf[18], 1);
+    add_string(type, &buf[19], strlen(type));
+    addSep(&buf[20]);
+    return 22;
 }
 
-int makePacket3(char* pointer, ){
+int makePlayerReady(char* pointer){
+    char* buf = pointer;
 
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(6, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 0, "");
+    add_string(&checkSum_Char, &buf[18], 1);
+    addSep(&buf[19]);
+    return 21;
 }
 
-int makePacket4(char* pointer, ){
+int makePlayerInput(char* pointer, char input){
+    char* buf = pointer;
 
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(8, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 8, input);
+    add_string(&checkSum_Char, &buf[18], 1);
+    add_string(input, &buf[19], strlen(input));
+    addSep(&buf[27]);
+    return 29;
 }
 
-int makePacket5(char* pointer, ){
+int makeCheckStatus (char* pointer){
+    char* buf = pointer;
 
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(9, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 0, "");
+    add_string(&checkSum_Char, &buf[18], 1);
+    addSep(&buf[19]);
+    return 21;
 }
 
-int makePacket6(char* pointer, ){
 
-}
-
-int makePacket7(char* pointer, ){
-
-}
-
-int makePacket8(char* pointer, ){
-
-}
-
-int makePacket9(char* pointer, ){
-
-}
-
-int makePacket10(char* pointer, ){
-
-}
 
 
 char printable_char(char c){
