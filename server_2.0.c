@@ -30,22 +30,18 @@ struct Client
     /*join client*/
     char name[20];
     /*lobby server*/
-    int status;
+    int status;             /*Player ready */
     char error[100];
     /*game type client*/
-    int type;
+    int gameType; /*1v1 or 2v2*/            
     /*player queue server ari int status*/
     /*game server ari int status*/
     /*player ready = empty*/
     /*game state server*/
 
-    int score;
-
-    int gameType;
-    float playerX1;
-    float playerY1;
-    int playerHeight1;
-    int playerWidth1;
+    int scoreTeam1; int scoreTeam2;
+    float playerX1; float playerY1;
+    int playerHeight1; int playerWidth1;
     int playerColor1;
 
     /*game state server*/
@@ -60,13 +56,14 @@ struct Client
 };
 struct Ball
 {
-    float ballX;
-    float ballY;
+    float ballX; float ballY;
     int ballRadius;
     int ballColor;
     int powerUpCount;
-    int windowWidth;
-    int windowHeight;
+    int windowWidth; int windowHeight;
+    int ID1;
+    float powerUpX1; float powerUpY1;
+    int powerUpWidth1; int powerUpHeight1;
 };
 
 
@@ -163,8 +160,10 @@ int makeGameReady(char* pointer, int status, char* error, int id){
 }
 
 int makeGameState(
-    char* pointer, int windowWidth, int windowHeight, int scoreTeam1, int scoreTeam2, 
-    int gameType, float ballX, float ballY, int ballRadius, int ballColor, int powerUpCount,
+    char* pointer, 
+    
+    int windowWidth, int windowHeight, int scoreTeam1, int scoreTeam2, int gameType, 
+    float ballX, float ballY, int ballRadius, int ballColor, int powerUpCount,
     /*10*4 = 40 */
     int id, /*neskaitās, vajadzīgs, lai atrastu pareizo klientu */
     
@@ -172,70 +171,73 @@ int makeGameState(
     float playerX2, float playerY2, int playerHeight2, int playerWidth2, int playerColor2,
     float playerX3, float playerY3, int playerHeight3, int playerWidth3, int playerColor3,
     float playerX4, float playerY4, int playerHeight4, int playerWidth4, int playerColor4,
-    /* 4*5*4 = 80 */
+    /* 20*4 = 80 */
     int ID1,  float powerUpX1, float powerUpY1, int powerUpWidth1, int powerUpHeight1,
     int ID2,  float powerUpX2, float  powerUpY2, int powerUpWidth2, int powerUpHeight2,
     int ID3, float powerUpX3, float powerUpY3, int powerUpWidth3, int powerUpHeight3
-    /* 4*5*3 = 60 */
+    /* 15*4 = 60 */
     ){
     char* buf = pointer;
     int PN = shared_clients[id].PN;
-    addSep(buf); /*start the data seg*/
-    /*
+    addSep(buf); 
     addInt(PN, (char*)buf+2);
     addInt(7, &buf[6]); 
     addLong(180, &buf[10]); 
-    
+/*start the data seg*/
     addInt(windowWidth, &buf[19]);
-    addInt(windowHeight, &buf[19]);
-    addInt(scoreTeam1, &buf[19]);
-    addInt(scoreTeam2, &buf[19]);
-    addInt(gameType, &buf[19]);
-    addInt(ballX, &buf[19]);
-    addInt(ballY, &buf[19]);
-    addInt(ballRadius, &buf[19]);
-    addInt(ballColor, &buf[19]);
-    addInt(powerUpCount, &buf[19]);
-    addInt(playerX1, &buf[19]);
-    addInt(playerY1, &buf[19]);
-    addInt(playerHeight1, &buf[19]);
-    addInt(playerWidth1, &buf[19]);
-    addInt(playerColor1, &buf[19]);
-    addInt(playerX2, &buf[19]);
-    addInt(playerY2, &buf[19]);
-    addInt(playerHeight2, &buf[19]);
-    addInt(playerColor2, &buf[19]);
-    addInt(playerX3, &buf[19]);
-    addInt(playerY3, &buf[19]);
-    addInt(playerHeight3, &buf[19]);
-    addInt(playerColor3, &buf[19]);
-    addInt(playerX4, &buf[19]);
-    addInt(playerY4, &buf[19]);
-    addInt(playerHeight4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerColor4, &buf[19]);
-    addInt(ID1, &buf[19]);
-    */
+    addInt(windowHeight, &buf[23]);
+    addInt(scoreTeam1, &buf[27]);
+    addInt(scoreTeam2, &buf[31]);
+    addInt(gameType, &buf[35]);
+    addInt(ballX, &buf[39]);
+    addInt(ballY, &buf[43]);
+    addInt(ballRadius, &buf[47]);
+    addInt(ballColor, &buf[51]);
+    addInt(powerUpCount, &buf[55]);
+
+    addInt(playerX1, &buf[59]);
+    addInt(playerY1, &buf[63]);
+    addInt(playerHeight1, &buf[67]);
+    addInt(playerWidth1, &buf[71]);
+    addInt(playerColor1, &buf[75]);
+    addInt(playerX2, &buf[79]);
+    addInt(playerY2, &buf[83]);
+    addInt(playerHeight2, &buf[87]);
+    addInt(playerWidth2, &buf[91]);
+    addInt(playerColor2, &buf[95]);
     
-    addInt(powerUpX1, &buf[19]);
-    addInt(powerUpY1, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
-    addInt(playerWidth4, &buf[19]);
+    addInt(playerX3, &buf[99]);
+    addInt(playerY3, &buf[103]);
+    addInt(playerHeight3, &buf[107]);
+    addInt(playerWidth3, &buf[111]);
+    addInt(playerColor3, &buf[115]);
+    addInt(playerX4, &buf[119]);
+    addInt(playerY4, &buf[123]);
+    addInt(playerHeight4, &buf[127]);
+    addInt(playerWidth4, &buf[131]);
+    addInt(playerColor4, &buf[135]);
+
+    addInt(ID1, &buf[139]);
+    addInt(powerUpX1, &buf[143]);
+    addInt(powerUpY1, &buf[147]);
+    addInt(powerUpWidth1, &buf[151]);
+    addInt(powerUpHeight1, &buf[155]);
+    addInt(ID2, &buf[159]);
+    addInt(powerUpX2, &buf[163]);
+    addInt(powerUpY2, &buf[167]);
+    addInt(powerUpWidth2, &buf[171]);
+    addInt(powerUpHeight2, &buf[175]);
+    addInt(ID3, &buf[179]);
+    addInt(powerUpX3, &buf[183]);
+    addInt(powerUpY3, &buf[187]);
+    addInt(powerUpWidth3, &buf[191]);
+    addInt(powerUpHeight3, &buf[195]); 
 
     /*end the data seg*/
-    char checkSum_Char = checksum(104, &buf[19]);
+    char checkSum_Char = checksum(180, &buf[19]);
     add_string(&checkSum_Char, &buf[18], 1);
-    /*
-    addInt(status, &buf[19]);
-    add_string(error, &buf[23], strlen(error));
-    addSep(&buf[123]);
-    */
-    return 125;
-
+    addSep(&buf[200]);
+    return 202;
 }
 
 int makeGameEnd (char* pointer, int status, char* error, int playerTeamScore, int enemyTeamScore,
@@ -264,6 +266,7 @@ void get_shared_memory()
         {
             struct Client cl = shared_clients[c_iterator];
             cl.PN = -1;
+            cl.status = 0; /*not ready*/
         }
 
         /*success & error messages*/
@@ -520,8 +523,21 @@ long getLong(char *packet)
 /*---------------------------------PACKET HENDLERS----------------------------------*/
 
 
-processPlayerInput(char* data, int size){
-
+processPlayerInput(char* data, int size, int id){
+    if((int)data == 4){
+        shared_clients[id].upKey = 1;
+    }else if((int)data == 2){
+        shared_clients[id].downKey = 1;
+    }else if((int)data == 6){
+        shared_clients[id].downKey = 1;
+        shared_clients[id].upKey = 1;
+    }else if((int)data == 1){
+        shared_clients[id].status = 0;
+    }else if((int)data == 7){
+        shared_clients[id].status = 0;
+        /*if you hit every part of your keybord that is your peoblem*/
+    }
+    
 }
 
 processJoin(char* data, int size, int id){
@@ -535,15 +551,15 @@ processJoin(char* data, int size, int id){
 }
 
 processGameType(char* data, int size, int id){
-
+    shared_clients[id].gameType = data;
 }
 
 processPlayerRedy(char* data, int size, int id){
-
+    shared_clients[id].status = 1; /*changes from 0 to 1 to indicate that player is ready packet 6*/
 }
 
 processCheckStatus(char* data, int size, int id){
-
+/*empty for now - this packet is used to check if disconects happen*/
 }
 
 /*----------------------------------------------------------------------------------*/
@@ -566,6 +582,9 @@ void unwrapping(char *out, int id)
         return;
     }
     printf("valid packet\n");
+
+    /*printing*/
+    print_bytes(out, size + 17);
 
     if(ID == 8){
         processPlayerInput(&out[17], size, id);
