@@ -16,8 +16,14 @@
 char* host;
 int port;
 struct sockaddr_in remote_address;
+
+
+         /*global variables*/
+/*----------------------------------*/
 /*for client to understand at which state it is*/
 int state = 0;
+int PN = 876576;
+/*----------------------------------*/
 
 void *connection_handler(void* socket_desc);
 void addSep( char * buf);
@@ -25,11 +31,11 @@ void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
-char * makePacket1( char* pointer, char* Username);
+int makePacket1( char* pointer, char* Username);
 
 
 void *connection_handler(void* args){
-    char inputs[8];
+    char inputs[256];
     int my_sock = *(int*) args;
     free(args);
 
@@ -42,27 +48,25 @@ void *connection_handler(void* args){
         printf("good connection\n");
         while(1){
             strcpy(buffer, "");
+
+        /*for sending from client to server*/
+            int payload_size = 0;
+
             /*scanf("%s",inputs);*/     /*input from terminal for tests*/
+
+
+            payload_size = makePacket1(inputs, "stuff");
+            print_bytes(inputs, payload_size);
+
+
             
-            
-            makePacket1(inputs, "stuff");
-            print_bytes(inputs, 9);
-            
-            /*
-            char sample[9];
-            sample[0] = inputs[0];
-            sample[1] = inputs[1];
-            sample[3] = inputs[3];
-            sample[4] = inputs[4];
-            sample[5] = inputs[5];
-            sample[6] = inputs[6];
-            */
-           
-            /*fflush(stdout);*/
-            
-            send(my_sock,inputs, 8,0);
-            memset(inputs, 0, 10);
-            sleep(5);
+
+
+
+
+            send(my_sock,inputs, payload_size,0);
+            memset(inputs, 0, payload_size);
+            sleep(1);
             /*printf("hey, yolo, nemiz %s", inputs);*/
             
             /*
@@ -81,37 +85,56 @@ void *connection_handler(void* args){
 /*Packet functions*/
 
 
-char * makePacket1(char* pointer,char* Username){
-    int PN = 876576;
+/*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
+
+int makePacket1(char* pointer,char* Username){
     char* buf = pointer;
 
     addSep(buf);
-    
     addInt(PN, (char*)buf+2);
-
-    addSep(buf + 6);
-
-    
-    
-    
-    /*
-    printf("yolo, 3.0 %s      ", buf);
     addInt(1, &buf[6]);
-    printf("yolo, 4.0 %s      ", buf);
     addLong(20, &buf[10]);
-    printf("yolo, 5.0 %s      ", buf);
     char checkSum_Char = checksum( 20, Username);
-    printf("yolo, 6.0 %s      ", buf);
     add_string(&checkSum_Char, &buf[18], 1);
-    printf("yolo, 7.0 %s      ", buf);
     add_string(Username, &buf[19], strlen(Username));
-    printf("yolo, 8.0 %s      ", buf);
     addSep(&buf[39]);
-    printf("yolo, 9.0 %s      ", buf);
-    buf[41] = '\0';
-    printf("yolo, 10.0 %s      ", buf);
-    */
-    return buf;
+    return 41;
+}
+
+int makePacket2(char* pointer, ){
+
+}
+
+int makePacket3(char* pointer, ){
+
+}
+
+int makePacket4(char* pointer, ){
+
+}
+
+int makePacket5(char* pointer, ){
+
+}
+
+int makePacket6(char* pointer, ){
+
+}
+
+int makePacket7(char* pointer, ){
+
+}
+
+int makePacket8(char* pointer, ){
+
+}
+
+int makePacket9(char* pointer, ){
+
+}
+
+int makePacket10(char* pointer, ){
+
 }
 
 

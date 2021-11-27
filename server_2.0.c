@@ -78,7 +78,7 @@ struct Join
 /*shared memory*/
 void get_shared_memory()
 {
-    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int);
+    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int);     /*size of int might not be needed initially wanted to use for PN but its better to store it in client struct now acts like a protective buffer I guess can be deleted*/
     if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0))
     {
         client_count = shared_memory;
@@ -268,6 +268,7 @@ void start_network()
     }
 }
 
+/*these functions can take advantige of check endienes later just add if statement that chacks in which order they should work*/
 int getPacketNumber(char *packet)
 {
     int val = 0;
@@ -283,7 +284,7 @@ int getPacketNumber(char *packet)
     return val;
 }
 
-int getPacketID(unsigned char *packet)
+int getPacketID(char *packet)
 {
     int val = 0;
 
@@ -298,7 +299,7 @@ int getPacketID(unsigned char *packet)
     return val;
 }
 
-long getPacketSize(unsigned char *packet)
+long getPacketSize(char *packet)
 {
     long val = 0;
 
@@ -315,11 +316,13 @@ long getPacketSize(unsigned char *packet)
 
 void unwrapping(char *out)
 {
-    int i = 0;
-    print_bytes(out, 10);
+    int PN = 0;
+    PN = getPacketNumber(out);
+    int ID = getPacketID(out);
+    int size = getPacketSize(out);
+    print_bytes(out, size); /*thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
 
-    i = getPacketNumber(out);
-    printf("packet number : %d\n", i);
+    printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);
 
     fflush(stdout);
     /*endieness  -> if (is_little_endian_system()== 1){} else {}*/
@@ -347,7 +350,7 @@ void process_client(int id, int socket)
     int i = 0;
     while (1)
     {
-        char out[8];
+        char out[1000];
         while (1)
         {
             read(socket, in, 1);
@@ -360,7 +363,6 @@ void process_client(int id, int socket)
                     if (in[0] == '-')
                     {
                         ++sepCounter;
-                        printf("\n do you even listen 5 .0 %c \n ", in[0]);
                         if (sepCounter == 2)
                         {
                             sepCounter = 0;
@@ -382,21 +384,17 @@ void process_client(int id, int socket)
                 }
                 else
                 {
-
-                    printf("\n do you even listen daudaudzdua .0 %c \n ", in[0]);
                     out[i] = in[0];
                 }
                 i++;
             }
             else
             {
-                printf("\n do you even listen 2.0 %c \n ", in[0]);
                 if (in[0] == '-')
                 {
                     read(socket, in, 1);
                     if (in[0] == '-')
                     {
-                        printf("\n do you even listen 4 .0 %c \n ", in[0]);
                         fflush(stdout);
                         ++sepCounter;
                         inpacket = 0;
