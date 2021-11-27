@@ -9,12 +9,15 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <netdb.h>
+#include <ctype.h>
 
 #define MAXSIZE 1024
 
 char* host;
 int port;
 struct sockaddr_in remote_address;
+/*for client to understand at which state it is*/
+int state = 0;
 
 void *connection_handler(void* socket_desc);
 void addSep( char * buf);
@@ -22,11 +25,11 @@ void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
- char * makePacket1( char* pointer, char* Username);
+char * makePacket1( char* pointer, char* Username);
 
 
 void *connection_handler(void* args){
-    char inputs[256];
+    char inputs[8];
     int my_sock = *(int*) args;
     free(args);
 
@@ -39,13 +42,29 @@ void *connection_handler(void* args){
         printf("good connection\n");
         while(1){
             strcpy(buffer, "");
-            /*scanf("%s",inputs);*/
-            makePacket1(inputs, "ndfvna");
+            /*scanf("%s",inputs);*/     /*input from terminal for tests*/
             
-            send(my_sock,inputs,strlen(inputs),0);
+            
+            makePacket1(inputs, "stuff");
+            print_bytes(inputs, 9);
+            
+            /*
+            char sample[9];
+            sample[0] = inputs[0];
+            sample[1] = inputs[1];
+            sample[3] = inputs[3];
+            sample[4] = inputs[4];
+            sample[5] = inputs[5];
+            sample[6] = inputs[6];
+            */
+           
+            /*fflush(stdout);*/
+            
+            send(my_sock,inputs, 8,0);
+            memset(inputs, 0, 10);
+            sleep(5);
             /*printf("hey, yolo, nemiz %s", inputs);*/
-            fflush(stdout);
-            memset(inputs, 0, 256);
+            
             /*
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
@@ -62,13 +81,20 @@ void *connection_handler(void* args){
 /*Packet functions*/
 
 
- char * makePacket1( char* pointer,char* Username){
-    int PN = 1;
-     char* buf = pointer;
+char * makePacket1(char* pointer,char* Username){
+    int PN = 876576;
+    char* buf = pointer;
 
     addSep(buf);
-    printf("yolo, 2.0 %s      ", buf);
-    addInt(PN, &buf[2]);
+    
+    addInt(PN, (char*)buf+2);
+
+    addSep(buf + 6);
+
+    
+    
+    
+    /*
     printf("yolo, 3.0 %s      ", buf);
     addInt(1, &buf[6]);
     printf("yolo, 4.0 %s      ", buf);
@@ -84,14 +110,39 @@ void *connection_handler(void* args){
     printf("yolo, 9.0 %s      ", buf);
     buf[41] = '\0';
     printf("yolo, 10.0 %s      ", buf);
+    */
     return buf;
 }
 
 
+char printable_char(char c){
+    if(isprint(c) != 0 ) return c;
+    return ' ';
+}
 
-
-
-
+void print_bytes(void* packet, int count){
+    int i;
+    char *p = (char*) packet;
+    if(count > 999){
+        printf("Cannot print more than 999 chars\n");
+        return;
+    }
+    printf("printing %d bytes... \n", count);
+    printf("[NPK] [C] [HEX] [DEC] [BINARY]\n");
+    printf("===============================\n");
+    for (i = 0; i< count; i++){
+        printf("%3d | %c | %02X | %3d | %c%c%c%c%c%c%c%c\n", i , printable_char(p[i]), p[i], p[i],
+        p[i] & 0x80 ? '1' : '0',
+        p[i] & 0x40 ? '1' : '0',
+        p[i] & 0x20 ? '1' : '0',
+        p[i] & 0x10 ? '1' : '0',
+        p[i] & 0x08 ? '1' : '0',
+        p[i] & 0x04 ? '1' : '0',
+        p[i] & 0x02 ? '1' : '0',
+        p[i] & 0x01 ? '1' : '0'
+        );
+    }
+}
 
 /*packet asembly helper functions*/
 
@@ -100,10 +151,20 @@ void addSep( char * buf){
     buf[1] = '-';
 }
 
-void addInt(int num,  char * buf){
+void fromInttoByte(int value, char* location){ 
     int i = 0;
+    int s = sizeof(int); 
+    char*p  = location; 
+    for(i = 0;  i < s ; i++){
+        p[i] = (value >> (s-i-1)*8) & 0xff;
+    }
+}
+
+void addInt(int num, char * buf){
+    int i = 0;
+    char *p = buf;
     for(i = 0; i < sizeof(int); i++){
-        buf[i] = (num >> (sizeof(int)-1-i)*8) & 0xff;
+        p[i] = (num >> (sizeof(int)-1-i)*8) & 0xff;
     }
 }
 
@@ -182,10 +243,12 @@ int main(int argc, char ** argv){
 
     int *socketname = malloc(sizeof(int));
     *socketname = my_socket;
+
     /*
     printf("tiek līdz šejienei");
     fflush(stdout);
     */
+
     pthread_t tred;
     pthread_create(&tred, NULL, connection_handler, socketname);
     pthread_join(tred, 0);

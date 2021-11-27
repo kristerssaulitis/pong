@@ -101,3 +101,99 @@ unsigned char * makePacket1(unsigned char* pointer, char* Username){
     addSeperator(&buffer[39]);
     return buffer;
 }
+
+while(1){
+        read(socket, in, 1);
+        printf("šis ir for sientific purpouses only %c, this is how many bites were were %li", in[0], read(socket, in, 1));
+        fflush(stdout);
+        while((rc = recv(newsockfd,pkt,sizeof(packet_size),0)) > 0){
+            read(socket, in, 1);
+
+            if (inpacket == 0){
+                if(in[0]=='-'){
+                    read(socket, in, 1);
+                    if(in[0]=='-'){
+                        ++sepCounter;
+                        printf("\n do you even listen 5 .0 %c \n ", in[0]);
+                            if (sepCounter==2){
+                                sepCounter = 0;
+                                inpacket = 1;
+
+                                out[i] = '\0';
+                                unwrapping(out);
+                                memset(out, 0, 1000);
+                                break;
+                            }
+                        } else {
+                            out[i] = '-';
+                            out[i+1] = in[0];
+                            i++;
+                        }
+                    } else {
+
+                        printf("\n do you even listen daudaudzdua .0 %c \n ", in[0]);
+                        out[i] = in[0];
+                    }
+                    i++;
+                } else {
+                    printf("\n do you even listen 2.0 %c \n ", in[0]);
+                    if(in[0]=='-'){
+                        read(socket, in, 1);
+                        if(in[0]=='-'){
+                            printf("\n do you even listen 4 .0 %c \n ", in[0]);
+                            fflush(stdout);
+                            ++sepCounter;
+                            inpacket = 0;
+                        }
+                }
+            }
+        }
+    }
+
+
+    int rc =0;
+/*-- nfdnvakjnfvjkdnfbkanf -- */
+/*šeit no iepriekšājā paliek -- abcdejdirst, šeit no nākamā sākas -- */
+/*-- nfdnvakjnfvjkdnfbkanf -- */
+        while((rc = recv(socket,in,1,0)) > 0){
+            printf("this is recv: %s", in);
+            fflush(stdout);
+            if (inpacket == 0){
+                if(in[0]=='-'){
+                    read(socket, in, 1);
+                    if(in[0]=='-'){
+                        ++sepCounter;
+                        printf("\n do you even listen 5 .0 %c \n ", in[0]);
+                            if (sepCounter==2){
+                                sepCounter = 0;
+                                inpacket = 1;
+
+                                out[i] = '\0';
+                                unwrapping(out);
+                                memset(out, 0, 1000);
+                                break;
+                            }
+                        } else {
+                            out[i] = '-';
+                            out[i+1] = in[0];
+                            i++;
+                        }
+                    } else {
+
+                        printf("\n do you even listen daudaudzdua .0 %c \n ", in[0]);
+                        out[i] = in[0];
+                    }
+                    i++;
+                } else {
+                    printf("\n do you even listen 2.0 %c \n ", in[0]);
+                    if(in[0]=='-'){
+                        read(socket, in, 1);
+                        if(in[0]=='-'){
+                            printf("\n do you even listen 4 .0 %c \n ", in[0]);
+                            fflush(stdout);
+                            ++sepCounter;
+                            inpacket = 0;
+                        }
+                }
+            }
+    }
