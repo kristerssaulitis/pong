@@ -94,8 +94,8 @@ int makeJoin(char* pointer,char* Username){
 
     addSep(buf);
     addInt(PN, (char*)buf+2);
-    addInt(1, &buf[6]);
-    addLong(20, &buf[10]);
+    addInt(1, &buf[6]); /* packetID*/
+    addLong(20, &buf[10]); /*packet size*/
     char checkSum_Char = checksum( 20, Username);
     add_string(&checkSum_Char, &buf[18], 1);
     add_string(Username, &buf[19], strlen(Username));
