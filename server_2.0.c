@@ -23,6 +23,8 @@ int *client_count = NULL; /*client count starts from 0 so to get client count <-
 struct Ball *shared_balls = NULL;
 struct Client *shared_clients = NULL;
 
+char checksum(int length, char *packet);
+
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
 struct Client
 {

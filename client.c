@@ -57,7 +57,9 @@ void *connection_handler(void* args){
 
             /*payload_size = makeJoin(inputs, "qwertyuiopasdfghjklz");*/
             /*payload_size = makeGameType(inputs, "1");*/
-            
+            /*payload_size = makeCheckStatus(inputs);*/
+            /*payload_size = makePlayerReady(inputs);*/
+            payload_size = makePlayerInput(inputs,"0");
             print_bytes(inputs, payload_size);
 
 
@@ -140,7 +142,7 @@ int makePlayerInput(char* pointer, char* input){
     addInt(PN, (char*)buf+2);
     addInt(8, &buf[6]);
     addLong(1, &buf[10]); /*equal up to this point*/
-    char checkSum_Char = checksum( 8, input);
+    char checkSum_Char = checksum( 1, input);
     add_string(&checkSum_Char, &buf[18], 1);
     add_string(input, &buf[19], strlen(input));
     addSep(&buf[20]);
