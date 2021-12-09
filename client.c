@@ -22,7 +22,7 @@ struct sockaddr_in remote_address;
 /*----------------------------------*/
 /*for client to understand at which state it is*/
 int state = 0;
-int PN = 876576;
+unsigned int PN = 876576;
 /*----------------------------------*/
 
 void *connection_handler(void* socket_desc);
@@ -31,7 +31,7 @@ void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
-int makeJoin( char* pointer, char* Username);
+int makeJoin( char* pointer, unsigned char* Username);
 
 
 void *connection_handler(void* args){
@@ -51,29 +51,18 @@ void *connection_handler(void* args){
 
         /*for sending from client to server*/
             int payload_size = 0;
-
             /*scanf("%s",inputs);*/     /*input from terminal for tests*/
-
-
             /*payload_size = makeJoin(inputs, "qwertyuiopasdfghjklz");*/
             /*payload_size = makeGameType(inputs, "1");*/
             /*payload_size = makeCheckStatus(inputs);*/
             /*payload_size = makePlayerReady(inputs);*/
             payload_size = makePlayerInput(inputs,"0");
             print_bytes(inputs, payload_size);
-
-
-
-            
-
-
-
-
             send(my_sock,inputs, payload_size,0);
             memset(inputs, 0, payload_size);
             sleep(1);
             /*printf("hey, yolo, nemiz %s", inputs);*/
-            
+
             /*
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
@@ -92,74 +81,77 @@ void *connection_handler(void* args){
 
 /*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
 
-int makeJoin(char* pointer,char* Username){
+int makeJoin(char* pointer, unsigned char* Username){
     char* buf = pointer;
 
     addSep(buf);
     addInt(PN, (char*)buf+2);
-    addInt(1, &buf[6]); /* packetID*/
-    addLong(20, &buf[10]); /*packet size*/
-    char checkSum_Char = checksum( 20, Username);
-    add_string(&checkSum_Char, &buf[18], 1);
-    add_string(Username, &buf[19], strlen(Username));
-    addSep(&buf[39]);
-    return 41;
+    addChar(&buf[6], '1'); /* packetID*/
+    addInt(20, &buf[7]); /*packet size*/
+    add_string(Username, &buf[11], strlen(Username));
+    char checkSum_Char = checksum(29, &buf[2]);
+    addChar(&buf[31], checkSum_Char);
+    addSep(&buf[32]);
+    return 34;
 }
 
 
 
-int makeGameType(char* pointer, char* type){
+int makeMessage(char* pointer, char* message, char playerID){
     char* buf = pointer;
 
-    addSep(buf);
-    addInt(PN, (char*)buf+2);
-    addInt(3, &buf[6]);
-    addLong(1, &buf[10]); /*equal up to this point*/
-    char checkSum_Char = checksum( 1, type);
-    add_string(&checkSum_Char, &buf[18], 1);
-    add_string(type, &buf[19], strlen(type));
-    addSep(&buf[20]);
-    return 22;
+    addSep(buf); /*2*/
+    addInt(PN, (char*)buf+2); /*6*/
+    addChar(&buf[6], '3'); /* packetID 7*/
+    addInt(258, &buf[7]); /*packet size 11*/
+    addChar(&buf[11], playerID); /*12*/
+    addChar(&buf[12], playerID); /*13*/
+    add_string(message, &buf[13], strlen(message)); /*256+13 = 269*/
+    char checkSum_Char = checksum(267, &buf[2]); /**/
+    addChar(&buf[269], checkSum_Char); /*270*/
+    addSep(&buf[270]); /*270*/
+    return 272;
 }
 
-int makePlayerReady(char* pointer){
+int makePlayerReady(char* pointer, char playerID){
     char* buf = pointer;
 
-    addSep(buf);
-    addInt(PN, (char*)buf+2);
-    addInt(6, &buf[6]);
-    addLong(1, &buf[10]); /*equal up to this point*/
-    char checkSum_Char = checksum( 0, "");
-    add_string(&checkSum_Char, &buf[18], 1);
-    addSep(&buf[19]);
-    return 21;
+    addSep(buf); /*2*/
+    addInt(PN, (char*)buf+2); /*6*/
+    addChar(&buf[6], '3'); /* packetID 7*/
+    addInt(1, &buf[7]); /*packet size 11*/
+    addChar(&buf[11], playerID); /*12*/
+    char checkSum_Char = checksum( 10 , &buf[2]);
+    addChar(&buf[12], checkSum_Char); /*13*/
+    addSep(&buf[13]);
+    return 15;
 }
 
-int makePlayerInput(char* pointer, char* input){
+int makePlayerInput(char* pointer, char input){
     char* buf = pointer;
 
-    addSep(buf);
-    addInt(PN, (char*)buf+2);
-    addInt(8, &buf[6]);
-    addLong(1, &buf[10]); /*equal up to this point*/
-    char checkSum_Char = checksum( 1, input);
-    add_string(&checkSum_Char, &buf[18], 1);
-    add_string(input, &buf[19], strlen(input));
-    addSep(&buf[20]);
-    return 22;
+    addSep(buf); /*2*/
+    addInt(PN, (char*)buf+2); /*6*/
+    addChar(&buf[6], '8'); /* packetID 7*/
+    addInt(1, &buf[7]); /*packet size 11*/
+    addChar(&buf[11], input); /*12*/
+    char checkSum_Char = checksum( 10 , &buf[2]);
+    addChar(&buf[12], checkSum_Char); /*13*/
+    addSep(&buf[13]);
+    return 15;
 }
 
 int makeCheckStatus (char* pointer){
     char* buf = pointer;
 
-    addSep(buf);
-    addInt(PN, (char*)buf+2);
-    addInt(9, &buf[6]);
-    addLong(1, &buf[10]); /*equal up to this point*/
-    char checkSum_Char = checksum( 0, "");
-    add_string(&checkSum_Char, &buf[18], 1);
-    addSep(&buf[19]);
-    return 21;
+    addSep(buf); /*2*/
+    addInt(PN, (char*)buf+2); /*6*/
+    addChar(&buf[6], '9'); /* packetID 7*/
+    addInt(0, &buf[7]); /*packet size 11*/
+    char checkSum_Char = checksum( 9 , &buf[2]);
+    addChar(&buf[11], checkSum_Char); /*13*/
+    addSep(&buf[12]);
+    return 14;
 }
 
 
@@ -201,10 +193,14 @@ void addSep( char * buf){
     buf[1] = '-';
 }
 
-void fromInttoByte(int value, char* location){ 
+void addChar( char * buf, unsigned char ch){
+    buf[0] = ch;
+}
+
+void fromInttoByte(int value, char* location){
     int i = 0;
-    int s = sizeof(int); 
-    char*p  = location; 
+    int s = sizeof(int);
+    char*p  = location;
     for(i = 0;  i < s ; i++){
         p[i] = (value >> (s-i-1)*8) & 0xff;
     }
@@ -234,11 +230,12 @@ void add_string(char* str,  char* buf, int count){
 }
 
 char checksum(int length, char* packet){
-    char checksum = 0;
-    for(int i=0; i<length; i++){
-        checksum ^= packet[i];
+    int i;
+    char res=0;
+    for(i = 0; i<length; i++){
+        res ^= packet[i];
     }
-    return checksum;
+    return res;
 }
 /*______________________________________________________________________________________-*/
 
