@@ -22,7 +22,7 @@ struct sockaddr_in remote_address;
 /*----------------------------------*/
 /*for client to understand at which state it is*/
 int state = 0;
-unsigned int PN = 876576;
+unsigned int PN = 8766;
 /*----------------------------------*/
 
 void *connection_handler(void* socket_desc);
@@ -32,6 +32,7 @@ void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
 int makeJoin( char* pointer, unsigned char* Username);
+int makePlayerInput(char* pointer, char input);
 
 
 void *connection_handler(void* args){
@@ -56,7 +57,8 @@ void *connection_handler(void* args){
             /*payload_size = makeGameType(inputs, "1");*/
             /*payload_size = makeCheckStatus(inputs);*/
             /*payload_size = makePlayerReady(inputs);*/
-            payload_size = makePlayerInput(inputs,"0");
+
+            payload_size = makePlayerInput(inputs,'2');
             print_bytes(inputs, payload_size);
             send(my_sock,inputs, payload_size,0);
             memset(inputs, 0, payload_size);
@@ -117,7 +119,7 @@ int makePlayerReady(char* pointer, char playerID){
     char* buf = pointer;
 
     addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*6*/
+    addInt(PN, &buf[2]); /*6*/
     addChar(&buf[6], '3'); /* packetID 7*/
     addInt(1, &buf[7]); /*packet size 11*/
     addChar(&buf[11], playerID); /*12*/
@@ -131,13 +133,13 @@ int makePlayerInput(char* pointer, char input){
     char* buf = pointer;
 
     addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*6*/
-    addChar(&buf[6], '8'); /* packetID 7*/
-    addInt(1, &buf[7]); /*packet size 11*/
-    addChar(&buf[11], input); /*12*/
+    addInt(PN, (char*)buf+2); /*2+4=6*/
+    addChar(&buf[6], '8'); /* packetID 6+1=7*/
+    addInt(1, &buf[7]); /*packet size 7+4=11*/
+    addChar(&buf[11], input); /*11+1=12*/
     char checkSum_Char = checksum( 10 , &buf[2]);
-    addChar(&buf[12], checkSum_Char); /*13*/
-    addSep(&buf[13]);
+    addChar(&buf[12], checkSum_Char); /*12+1=13*/
+    addSep(&buf[13]);/*13+2=15*/
     return 15;
 }
 

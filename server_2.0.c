@@ -81,6 +81,10 @@ void addSep( char * buf){
     buf[1] = '-';
 }
 
+void addChar( char * buf, unsigned char ch){
+    buf[0] = ch;
+}
+
 void fromInttoByte(int value, char* location){
     int i = 0;
     int s = sizeof(int);
@@ -113,19 +117,28 @@ void add_string(char* str,  char* buf, int count){
     }
 }
 
-int makeLobby(char* pointer, int status, char* error, int id){
+char checksum(int length, char* packet){
+    int i;
+    char res=0;
+    for(i = 0; i<length; i++){
+        res ^= packet[i];
+    }
+    return res;
+}
+
+
+int makeAccept(char* pointer, char status, int id){
     char* buf = pointer;
     int PN = shared_clients[id].PN;
+
     addSep(buf);
     addInt(PN, (char*)buf+2);
-    addInt(2, &buf[6]); /* packetID*/
-    addLong(108, &buf[10]); /*packet size*/
-
-    char checkSum_Char = checksum(104, &buf[19]);
-    add_string(&checkSum_Char, &buf[18], 1);
-    addInt(status, &buf[19]);
-    add_string(error, &buf[23], strlen(error));
-    addSep(&buf[123]);
+    addChar(&buf[6], '2'); /* packetID*/
+    addInt(20, &buf[7]); /*packet size*/
+    add_string(status, &buf[11], strlen(status));
+    char checkSum_Char = checksum(29, &buf[2]);
+    addChar(&buf[31], checkSum_Char);
+    addSep(&buf[32]);
     return 125;
 }
 
@@ -160,6 +173,7 @@ int makeGameReady(char* pointer, int status, char* error, int id){
     addSep(&buf[123]);
     return 125;
 }
+
 
 int makeGameState(
     char* pointer,
@@ -294,16 +308,6 @@ void direct_copy_data_as_bytes(void *packet, void *data, int size)
     }
 }
 
-/*packet helper functions*/
-char checksum(int length, char *packet)
-{
-    char checksum = 0;
-    for (int i = 0; i < length; i++)
-    {
-        checksum ^= packet[i];
-    }
-    return checksum;
-}
 
 int is_little_endian_system()
 {
@@ -478,11 +482,12 @@ int getPacketID(char *packet)
 
 long getPacketSize(char *packet)
 {
-    long val = 0;
+    int val = 0;
 
     int j = 0;
     int i;
-    for (i = 15; i >= 8; --i)
+    /*15 8*/
+    for (i = 8; i >= 5; --i)
     {
         val += (packet[i] & 0xFF) << (8 * j);
         ++j;
@@ -512,6 +517,7 @@ long getLong(char *packet)
 
     int j = 0;
     int i;
+
     for (i = 7; i >= 0; --i)
     {
         val += (packet[i] & 0xFF) << (8 * j);
@@ -526,17 +532,24 @@ long getLong(char *packet)
 
 
 processPlayerInput(char* data, int size, int id){
-    if((int)data == 4){
+    if(!strcmp(data, '2')){
         shared_clients[id].upKey = 1;
-    }else if((int)data == 2){
+
+    }else if(!strcmp(data, '1')){
+        printf("printe kkadu huinu");
         shared_clients[id].downKey = 1;
-    }else if((int)data == 6){
-        shared_clients[id].downKey = 1;
-        shared_clients[id].upKey = 1;
-    }else if((int)data == 1){
+    }else if(!strcmp(data, '3')){
+        printf("printe kkadu huinu");
+        shared_clients[id].leftKey = 1;
+    }else if(!strcmp(data, '4')){
+        printf("printe kkadu huinu");
+        shared_clients[id].rightKey = 1;
+    }else if(!strcmp(data, '0')){
+        printf("printe kkadu huinu");
         shared_clients[id].status = 0;
-    }else if((int)data == 7){
-        shared_clients[id].status = 0;
+    }else if(!strcmp(data, '5')){
+        printf("printe kkadu huinu");
+        /*shared_clients[id].status = 0;*/
         /*if you hit every part of your keybord that is your peoblem*/
     }
 
@@ -568,20 +581,33 @@ processCheckStatus(char* data, int size, int id){
 
 void unwrapping(char *out, int id)
 {
+
     int PN = getPacketNumber(out);
     if (PN < shared_clients[id].PN){
         printf("old packet recieved\n");
         return; /*will not process older packets*/
     }
-
-    int ID = getPacketID(out);
+/*
+char checksum(int length, char* packet){
+    int i;
+    char res=0;
+    for(i = 0; i<length; i++){
+        res ^= packet[i];
+    }
+    return res;
+}
+*/
+    int ID = out[4];
     /*can check ID but overall Id will be more imoortant later*/
     int size = getPacketSize(out);
     /*int n = 0;*/
     /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
+    printf("jobans ar biezpienu 2.0 %i \n", size);
+    fflush(stdout);
+    char CS = checksum(size+9, out[0]);
 
-    char CS = checksum(size+9, out);
     char CSP = out[size + 9];
+
     /*nu itka visam bet hz japateste*/
 
     printf("checksum calculated %c\necieved calculated %c\n", CS, CSP);
@@ -591,27 +617,29 @@ void unwrapping(char *out, int id)
     }
     printf("valid packet\n");
 
-    /*unescaping packet*/
+    /*unescaping packet pagaidam ne jo nav nehuja skaidrs*/
+    /*
     int ue;
     for(ue = 0; ue <= size + 10; ue++){
         if(out[ue] == '?'){
-            if(out[ue + 1] == )
+            if(out[ue + 1] == kas ir? es tevi nedzirdu, viss lab?)
         }
     }
+    */
 
     /*printing*/
     print_bytes(out, size + 17);
 
-    if(ID == 8){
-        processPlayerInput(&out[17], size, id);
-    }else if(ID == 1){
-        processJoin(&out[17], size, id);
-    }else if(ID == 3){
-        processGameType(&out[17], size, id);
-    }else if(ID == 6){
-        processPlayerRedy(&out[17], size, id);
-    }else if(ID == 9){
-        processCheckStatus(&out[17], size, id);
+    if(ID == '8'){
+        processPlayerInput(&out[9], size, id);
+    }else if(ID == '1'){
+        processJoin(&out[9], size, id);
+    }else if(ID == '3'){
+        processGameType(&out[9], size, id);
+    }else if(ID == '6'){
+        processPlayerRedy(&out[9], size, id);
+    }else if(ID == '9'){
+        processCheckStatus(&out[9], size, id);
     }else{
         printf("unknown packet recieved\n");
     }
@@ -631,6 +659,7 @@ void process_client(int id, int socket)
     /*0 = ja', 1 = nē*/
 
     int i = 0;
+    printf("\n");
     while (1)
     {
         char out[1000];
