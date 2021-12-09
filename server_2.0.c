@@ -119,7 +119,7 @@ void add_string(char* str,  char* buf, int count){
 
 char checksum(int length, char* packet){
     int i;
-    char res=0;
+    char res = 0;
     for(i = 0; i<length; i++){
         res ^= packet[i];
     }
@@ -531,23 +531,24 @@ long getLong(char *packet)
 /*---------------------------------PACKET HENDLERS----------------------------------*/
 
 
-processPlayerInput(char* data, int size, int id){
-    if(!strcmp(data, '2')){
+void processPlayerInput(char* data, int size, int id){
+    printf(" \n jeibogu \n");
+    if(data[0] == '2'){
+        printf("printe kkadu huinu");
         shared_clients[id].upKey = 1;
-
-    }else if(!strcmp(data, '1')){
+    }else if(data[0] == '1'){
         printf("printe kkadu huinu");
         shared_clients[id].downKey = 1;
-    }else if(!strcmp(data, '3')){
+    }else if(data[0] == '3'){
         printf("printe kkadu huinu");
         shared_clients[id].leftKey = 1;
-    }else if(!strcmp(data, '4')){
+    }else if(data[0] =='4'){
         printf("printe kkadu huinu");
         shared_clients[id].rightKey = 1;
-    }else if(!strcmp(data, '0')){
+    }else if(data[0]=='0'){
         printf("printe kkadu huinu");
         shared_clients[id].status = 0;
-    }else if(!strcmp(data, '5')){
+    }else if(data[0] == '5'){
         printf("printe kkadu huinu");
         /*shared_clients[id].status = 0;*/
         /*if you hit every part of your keybord that is your peoblem*/
@@ -555,7 +556,7 @@ processPlayerInput(char* data, int size, int id){
 
 }
 
-processJoin(char* data, int size, int id){
+void processJoin(char* data, int size, int id){
     /*could do escaping but we kinda usless only makes the difference if things like player--name recieved we can just not allaw that*/
     int i;
     for(i = 0; (data + i) != '\n' && i< 20; i++){
@@ -565,15 +566,15 @@ processJoin(char* data, int size, int id){
 
 }
 
-processGameType(char* data, int size, int id){
+void processGameType(char* data, int size, int id){
     shared_clients[id].gameType = data;
 }
 
-processPlayerRedy(char* data, int size, int id){
+void processPlayerRedy(char* data, int size, int id){
     shared_clients[id].status = 1; /*changes from 0 to 1 to indicate that player is ready packet 6*/
 }
 
-processCheckStatus(char* data, int size, int id){
+void processCheckStatus(char* data, int size, int id){
 /*empty for now - this packet is used to check if disconects happen*/
 }
 
@@ -587,30 +588,18 @@ void unwrapping(char *out, int id)
         printf("old packet recieved\n");
         return; /*will not process older packets*/
     }
-/*
-char checksum(int length, char* packet){
-    int i;
-    char res=0;
-    for(i = 0; i<length; i++){
-        res ^= packet[i];
-    }
-    return res;
-}
-*/
-    int ID = out[4];
+
+    char ID = out[4];
     /*can check ID but overall Id will be more imoortant later*/
+
     int size = getPacketSize(out);
     /*int n = 0;*/
     /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
-    printf("jobans ar biezpienu 2.0 %i \n", size);
-    fflush(stdout);
-    char CS = checksum(size+9, out[0]);
 
+    char CS = checksum(size+9, out);
     char CSP = out[size + 9];
-
     /*nu itka visam bet hz japateste*/
 
-    printf("checksum calculated %c\necieved calculated %c\n", CS, CSP);
     if(CS != CSP){
         printf("packet checksum is not correct\n");
         return;
@@ -628,8 +617,8 @@ char checksum(int length, char* packet){
     */
 
     /*printing*/
-    print_bytes(out, size + 17);
-
+    print_bytes(out, size + 10);
+    printf("our id is %c", ID);
     if(ID == '8'){
         processPlayerInput(&out[9], size, id);
     }else if(ID == '1'){
