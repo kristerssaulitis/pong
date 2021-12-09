@@ -9,6 +9,7 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <netdb.h>
+#include <ctype.h>
 
 #define MAXSIZE 1024
 
@@ -16,13 +17,21 @@ char* host;
 int port;
 struct sockaddr_in remote_address;
 
+
+         /*global variables*/
+/*----------------------------------*/
+/*for client to understand at which state it is*/
+int state = 0;
+int PN = 876576;
+/*----------------------------------*/
+
 void *connection_handler(void* socket_desc);
 void addSep( char * buf);
 void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
- char * makePacket1( char* pointer, char* Username);
+int makeJoin( char* pointer, char* Username);
 
 
 void *connection_handler(void* args){
@@ -39,13 +48,32 @@ void *connection_handler(void* args){
         printf("good connection\n");
         while(1){
             strcpy(buffer, "");
-            /*scanf("%s",inputs);*/
-            makePacket1(inputs, "ndfvna");
+
+        /*for sending from client to server*/
+            int payload_size = 0;
+
+            /*scanf("%s",inputs);*/     /*input from terminal for tests*/
+
+
+            /*payload_size = makeJoin(inputs, "qwertyuiopasdfghjklz");*/
+            /*payload_size = makeGameType(inputs, "1");*/
+            /*payload_size = makeCheckStatus(inputs);*/
+            /*payload_size = makePlayerReady(inputs);*/
+            payload_size = makePlayerInput(inputs,"0");
+            print_bytes(inputs, payload_size);
+
+
+
             
-            send(my_sock,inputs,strlen(inputs),0);
+
+
+
+
+            send(my_sock,inputs, payload_size,0);
+            memset(inputs, 0, payload_size);
+            sleep(1);
             /*printf("hey, yolo, nemiz %s", inputs);*/
-            fflush(stdout);
-            memset(inputs, 0, 256);
+            
             /*
             sleep(1);
             if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
@@ -62,36 +90,109 @@ void *connection_handler(void* args){
 /*Packet functions*/
 
 
- char * makePacket1( char* pointer,char* Username){
-    int PN = 1;
-     char* buf = pointer;
+/*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
+
+int makeJoin(char* pointer,char* Username){
+    char* buf = pointer;
 
     addSep(buf);
-    printf("yolo, 2.0 %s      ", buf);
-    addInt(PN, &buf[2]);
-    printf("yolo, 3.0 %s      ", buf);
-    addInt(1, &buf[6]);
-    printf("yolo, 4.0 %s      ", buf);
-    addLong(20, &buf[10]);
-    printf("yolo, 5.0 %s      ", buf);
+    addInt(PN, (char*)buf+2);
+    addInt(1, &buf[6]); /* packetID*/
+    addLong(20, &buf[10]); /*packet size*/
     char checkSum_Char = checksum( 20, Username);
-    printf("yolo, 6.0 %s      ", buf);
     add_string(&checkSum_Char, &buf[18], 1);
-    printf("yolo, 7.0 %s      ", buf);
     add_string(Username, &buf[19], strlen(Username));
-    printf("yolo, 8.0 %s      ", buf);
     addSep(&buf[39]);
-    printf("yolo, 9.0 %s      ", buf);
-    buf[41] = '\0';
-    printf("yolo, 10.0 %s      ", buf);
-    return buf;
+    return 41;
+}
+
+
+
+int makeGameType(char* pointer, char* type){
+    char* buf = pointer;
+
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(3, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 1, type);
+    add_string(&checkSum_Char, &buf[18], 1);
+    add_string(type, &buf[19], strlen(type));
+    addSep(&buf[20]);
+    return 22;
+}
+
+int makePlayerReady(char* pointer){
+    char* buf = pointer;
+
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(6, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 0, "");
+    add_string(&checkSum_Char, &buf[18], 1);
+    addSep(&buf[19]);
+    return 21;
+}
+
+int makePlayerInput(char* pointer, char* input){
+    char* buf = pointer;
+
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(8, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 1, input);
+    add_string(&checkSum_Char, &buf[18], 1);
+    add_string(input, &buf[19], strlen(input));
+    addSep(&buf[20]);
+    return 22;
+}
+
+int makeCheckStatus (char* pointer){
+    char* buf = pointer;
+
+    addSep(buf);
+    addInt(PN, (char*)buf+2);
+    addInt(9, &buf[6]);
+    addLong(1, &buf[10]); /*equal up to this point*/
+    char checkSum_Char = checksum( 0, "");
+    add_string(&checkSum_Char, &buf[18], 1);
+    addSep(&buf[19]);
+    return 21;
 }
 
 
 
 
+char printable_char(char c){
+    if(isprint(c) != 0 ) return c;
+    return ' ';
+}
 
-
+void print_bytes(void* packet, int count){
+    int i;
+    char *p = (char*) packet;
+    if(count > 999){
+        printf("Cannot print more than 999 chars\n");
+        return;
+    }
+    printf("printing %d bytes... \n", count);
+    printf("[NPK] [C] [HEX] [DEC] [BINARY]\n");
+    printf("===============================\n");
+    for (i = 0; i< count; i++){
+        printf("%3d | %c | %02X | %3d | %c%c%c%c%c%c%c%c\n", i , printable_char(p[i]), p[i], p[i],
+        p[i] & 0x80 ? '1' : '0',
+        p[i] & 0x40 ? '1' : '0',
+        p[i] & 0x20 ? '1' : '0',
+        p[i] & 0x10 ? '1' : '0',
+        p[i] & 0x08 ? '1' : '0',
+        p[i] & 0x04 ? '1' : '0',
+        p[i] & 0x02 ? '1' : '0',
+        p[i] & 0x01 ? '1' : '0'
+        );
+    }
+}
 
 /*packet asembly helper functions*/
 
@@ -100,10 +201,20 @@ void addSep( char * buf){
     buf[1] = '-';
 }
 
-void addInt(int num,  char * buf){
+void fromInttoByte(int value, char* location){ 
     int i = 0;
+    int s = sizeof(int); 
+    char*p  = location; 
+    for(i = 0;  i < s ; i++){
+        p[i] = (value >> (s-i-1)*8) & 0xff;
+    }
+}
+
+void addInt(int num, char * buf){
+    int i = 0;
+    char *p = buf;
     for(i = 0; i < sizeof(int); i++){
-        buf[i] = (num >> (sizeof(int)-1-i)*8) & 0xff;
+        p[i] = (num >> (sizeof(int)-1-i)*8) & 0xff;
     }
 }
 
@@ -182,10 +293,12 @@ int main(int argc, char ** argv){
 
     int *socketname = malloc(sizeof(int));
     *socketname = my_socket;
+
     /*
     printf("tiek līdz šejienei");
     fflush(stdout);
     */
+
     pthread_t tred;
     pthread_create(&tred, NULL, connection_handler, socketname);
     pthread_join(tred, 0);

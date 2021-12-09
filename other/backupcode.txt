@@ -50,3 +50,18 @@ char temp_str[256] = "";
         }
     }
 */
+
+/*from unwraper*/
+   /*endieness  -> if (is_little_endian_system()== 1){} else {}*/
+
+    /*
+packet number
+checksum
+escaping
+    while(1){
+        if(out[i]=='?'){
+            if(c=='-') c = '-';
+            else if(c=='*') c = '?';
+        }
+    }
+*/
