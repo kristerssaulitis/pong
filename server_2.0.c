@@ -35,7 +35,7 @@ struct Client
     int status;             /*Player ready */
     char error[100];
     /*game type client*/
-    int gameType; /*1v1 or 2v2*/            
+    int gameType; /*1v1 or 2v2*/
     /*player queue server ari int status*/
     /*game server ari int status*/
     /*player ready = empty*/
@@ -68,11 +68,6 @@ struct Ball
     int powerUpWidth1; int powerUpHeight1;
 };
 
-<<<<<<< HEAD
-struct Join{
-
-};
-=======
 
 /*Networking functions*/
 /*_____________________________________________________________________________________________________________*/
@@ -86,10 +81,10 @@ void addSep( char * buf){
     buf[1] = '-';
 }
 
-void fromInttoByte(int value, char* location){ 
+void fromInttoByte(int value, char* location){
     int i = 0;
-    int s = sizeof(int); 
-    char*p  = location; 
+    int s = sizeof(int);
+    char*p  = location;
     for(i = 0;  i < s ; i++){
         p[i] = (value >> (s-i-1)*8) & 0xff;
     }
@@ -125,7 +120,7 @@ int makeLobby(char* pointer, int status, char* error, int id){
     addInt(PN, (char*)buf+2);
     addInt(2, &buf[6]); /* packetID*/
     addLong(108, &buf[10]); /*packet size*/
-    
+
     char checkSum_Char = checksum(104, &buf[19]);
     add_string(&checkSum_Char, &buf[18], 1);
     addInt(status, &buf[19]);
@@ -133,7 +128,6 @@ int makeLobby(char* pointer, int status, char* error, int id){
     addSep(&buf[123]);
     return 125;
 }
->>>>>>> 3a9555edd7384d80a669f638cdec96a4e307c097
 
 int makePlayerQueue(char* pointer, int status, char* error, int id){
     char* buf = pointer;
@@ -142,7 +136,7 @@ int makePlayerQueue(char* pointer, int status, char* error, int id){
     addInt(PN, (char*)buf+2);
     addInt(4, &buf[6]); /* packetID*/
     addLong(108, &buf[10]); /*packet size*/
-    
+
     char checkSum_Char = checksum(104, &buf[19]);
     add_string(&checkSum_Char, &buf[18], 1);
     addInt(status, &buf[19]);
@@ -158,7 +152,7 @@ int makeGameReady(char* pointer, int status, char* error, int id){
     addInt(PN, (char*)buf+2);
     addInt(5, &buf[6]); /* packetID*/
     addLong(108, &buf[10]); /*packet size*/
-    
+
     char checkSum_Char = checksum(104, &buf[19]);
     add_string(&checkSum_Char, &buf[18], 1);
     addInt(status, &buf[19]);
@@ -168,13 +162,13 @@ int makeGameReady(char* pointer, int status, char* error, int id){
 }
 
 int makeGameState(
-    char* pointer, 
-    
-    int windowWidth, int windowHeight, int scoreTeam1, int scoreTeam2, int gameType, 
+    char* pointer,
+
+    int windowWidth, int windowHeight, int scoreTeam1, int scoreTeam2, int gameType,
     float ballX, float ballY, int ballRadius, int ballColor, int powerUpCount,
     /*10*4 = 40 */
     int id, /*neskaitās, vajadzīgs, lai atrastu pareizo klientu */
-    
+
     float playerX1, float playerY1, int playerHeight1, int playerWidth1, int playerColor1,
     float playerX2, float playerY2, int playerHeight2, int playerWidth2, int playerColor2,
     float playerX3, float playerY3, int playerHeight3, int playerWidth3, int playerColor3,
@@ -187,10 +181,10 @@ int makeGameState(
     ){
     char* buf = pointer;
     int PN = shared_clients[id].PN;
-    addSep(buf); 
+    addSep(buf);
     addInt(PN, (char*)buf+2);
-    addInt(7, &buf[6]); 
-    addLong(180, &buf[10]); 
+    addInt(7, &buf[6]);
+    addLong(180, &buf[10]);
 /*start the data seg*/
     addInt(windowWidth, &buf[19]);
     addInt(windowHeight, &buf[23]);
@@ -213,7 +207,7 @@ int makeGameState(
     addInt(playerHeight2, &buf[87]);
     addInt(playerWidth2, &buf[91]);
     addInt(playerColor2, &buf[95]);
-    
+
     addInt(playerX3, &buf[99]);
     addInt(playerY3, &buf[103]);
     addInt(playerHeight3, &buf[107]);
@@ -239,7 +233,7 @@ int makeGameState(
     addInt(powerUpX3, &buf[183]);
     addInt(powerUpY3, &buf[187]);
     addInt(powerUpWidth3, &buf[191]);
-    addInt(powerUpHeight3, &buf[195]); 
+    addInt(powerUpHeight3, &buf[195]);
 
     /*end the data seg*/
     char checkSum_Char = checksum(180, &buf[19]);
@@ -288,14 +282,6 @@ void get_shared_memory()
     }
 }
 
-<<<<<<< HEAD
-void direct_copy_data_as_bytes(void* packet, void* data, int size){
-    /* Different results on different thusam machines, But can store any data type!*/
-    int i;
-    char* p = packet;
-    char* d = data;
-    for(i=0;i<size;i++){
-=======
 void direct_copy_data_as_bytes(void *packet, void *data, int size)
 {
     /* Different results on different thusam machines, But can store any data type!*/
@@ -304,7 +290,6 @@ void direct_copy_data_as_bytes(void *packet, void *data, int size)
     char *d = data;
     for (i = 0; i < size; i++)
     {
->>>>>>> 3a9555edd7384d80a669f638cdec96a4e307c097
         p[i] = d[i];
     }
 }
@@ -320,23 +305,6 @@ char checksum(int length, char *packet)
     return checksum;
 }
 
-<<<<<<< HEAD
-void universal_store_int_as_bytes_big_endian(void* packet, int data){
-    int i;
-    int s = sizeof(int);
-    char* p = packet;
-    for(i=0; i<s; i++){
-        p[i] = (data >> (s-i-1)*8) & 0xFF;
-    }
-}
-
-void universal_store_int_as_bytes_little_endian(void* packet, int data){
-    int i;
-    int s = sizeof(int);
-    char* p = packet;
-    for(i=0; i<s; i++){
-        p[i] = (data >> (i*8)) & 0xFF;
-=======
 int is_little_endian_system()
 {
     volatile uint32_t i = 0x01234567;
@@ -363,7 +331,6 @@ void universal_store_int_as_bytes_little_endian(void *packet, int data)
     for (i = 0; i < s; i++)
     {
         p[i] = (data >> (i * 8)) & 0xFF;
->>>>>>> 3a9555edd7384d80a669f638cdec96a4e307c097
     }
 }
 
@@ -572,7 +539,7 @@ processPlayerInput(char* data, int size, int id){
         shared_clients[id].status = 0;
         /*if you hit every part of your keybord that is your peoblem*/
     }
-    
+
 }
 
 processJoin(char* data, int size, int id){
@@ -582,7 +549,7 @@ processJoin(char* data, int size, int id){
         shared_clients[id].name[i] = data +i;
     }
     printf("check name %s", shared_clients[id].name);
-    
+
 }
 
 processGameType(char* data, int size, int id){
@@ -608,15 +575,29 @@ void unwrapping(char *out, int id)
     }
 
     int ID = getPacketID(out);
+    /*can check ID but overall Id will be more imoortant later*/
     int size = getPacketSize(out);
-    char CS = checksum(size, &out[17]);
-    char CSP = out[16];
+    /*int n = 0;*/
+    /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
+
+    char CS = checksum(size+9, out);
+    char CSP = out[size + 9];
+    /*nu itka visam bet hz japateste*/
+
     printf("checksum calculated %c\necieved calculated %c\n", CS, CSP);
     if(CS != CSP){
         printf("packet checksum is not correct\n");
         return;
     }
     printf("valid packet\n");
+
+    /*unescaping packet*/
+    int ue;
+    for(ue = 0; ue <= size + 10; ue++){
+        if(out[ue] == '?'){
+            if(out[ue + 1] == )
+        }
+    }
 
     /*printing*/
     print_bytes(out, size + 17);
