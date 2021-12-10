@@ -59,7 +59,7 @@ void *connection_handler(void* args){
             /*payload_size = makePlayerReady(inputs);*/
 
             payload_size = makeJoin(inputs,"mani nesauc ko$a");
-            print_bytes(inputs, payload_size);
+            /*print_bytes(inputs, payload_size);*/
             send(my_sock,inputs, payload_size,0);
             memset(inputs, 0, payload_size);
             sleep(1);
