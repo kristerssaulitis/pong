@@ -95,9 +95,9 @@ void *connection_handler(void* args){
             /*payload_size = makeGameType(inputs, "1");*/
             /*payload_size = makeCheckStatus(inputs);*/
             /*payload_size = makePlayerReady(inputs);*/
-            strcpy(myClient->message,"jeibogu");
+            strcpy(myClient->name,"jeibogu");
             payload_size = makeJoin(inputs);
-            /*print_bytes(inputs, payload_size);*/
+            print_bytes(inputs, payload_size);
             send(my_sock,inputs, payload_size,0);
             memset(inputs, 0, payload_size);
             sleep(1);
@@ -124,13 +124,14 @@ void *connection_handler(void* args){
 int makeJoin(char* pointer ){
     char* buf = pointer;
     int PN = myClient->PN;
-    unsigned char Username[20] = myClient->name;
+    char name[20];
+    strcpy(name,myClient->name);
 
     addSep(buf);
     addInt(PN, (char*)buf+2);
     addChar(&buf[6], '1'); /* packetID*/
     addInt(20, &buf[7]); /*packet size*/
-    add_string(Username, &buf[11], strlen(Username));
+    add_string(name, &buf[11], 20);
     char checkSum_Char = checksum(29, &buf[2]);
     addChar(&buf[31], checkSum_Char);
     addSep(&buf[32]);
@@ -142,7 +143,8 @@ int makeJoin(char* pointer ){
 int makeMessage(char* pointer ){
     char* buf = pointer;
     int PN = myClient->PN;
-    char message[256] = myClient->message;
+    char message[256];
+    strcpy(message,myClient->name);
     char playerID = myClient->playerID;
 
     addSep(buf); /*2*/

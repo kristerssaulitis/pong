@@ -172,7 +172,8 @@ int makeMessage(char* pointer, char* message, int id){
 int makeLobby(char* pointer,  int id){
     char* buf = pointer;
     int PN = shared_clients[id].PN;
-    char name[20] = shared_clients[id].name;
+    char name[20];
+    strcpy(name,shared_clients[id].name);
     char count = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
 
@@ -202,7 +203,8 @@ int makeGameReady( char* pointer, int id ){
     float team_goal2X = shared_balls->team_goal2X;
     float team_goal2Y = shared_balls->team_goal2Y;
     char ready = shared_clients[id].ready;
-    char name[20] = shared_clients[id].name;
+    char name[20];
+    strcpy(name,shared_clients[id].name);
     float playerX1 = shared_clients[id].playerX1;
     float playerY1 = shared_clients[id].playerY1;
     int playerHeight1 = shared_clients[id].playerHeight1;
@@ -316,7 +318,8 @@ int makeGameEnd (char* pointer, int id, char status ){
     char teamID = shared_clients[id].teamID;
     char playerCount = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
-    char name[20] = shared_clients[id].name;
+    char name[20];
+    strcpy(name,shared_clients[id].name);
     int score = shared_clients[id].score;
 
     addSep(buf);
