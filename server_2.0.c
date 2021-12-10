@@ -147,6 +147,7 @@ int makeAccept(char* pointer, int id){
     return 15;
 }
 
+
 int makeMessage(char* pointer, char* message, int id){
     char* buf = pointer;
     int PN = shared_clients[id].PN;
