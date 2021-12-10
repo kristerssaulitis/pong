@@ -718,11 +718,11 @@ void unwrapping(char *out, int id)
     }
 
 
-    int payload_size = 0;
-    char outputs[1024];
-    int my_socket = 0;
-            shared_clients[id].PN = 9;
-            shared_clients[id].playerID = '0';
+            int payload_size = 0;
+            char outputs[1024];
+            int my_socket = 0;
+            shared_clients[id].PN = 98;
+            shared_clients[id].playerID = '9';
             payload_size = makeAccept(outputs, id);
             my_socket = shared_clients[id].socket;
 
