@@ -36,6 +36,8 @@ struct Client
     char teamID;
     char ready;
     char status;
+
+    int socket;
     /*player queue server ari int status*/
     /*game server ari int status*/
     /*player ready = empty*/
@@ -513,6 +515,7 @@ void start_network()
             {
 
                 /*fflush(stdout);*/
+                shared_clients[new_client_id].socket = client_socket;
                 process_client(new_client_id, client_socket);
                 exit(0);
             }
@@ -698,7 +701,7 @@ void unwrapping(char *out, int id)
     */
 
     /*printing*/
-    /*print_bytes(out, size + 10);*/
+    print_bytes(out, size + 10);
     printf("our id is %c", ID);
     if(ID == '8'){
         processPlayerInput(&out[9], size, id);
@@ -713,6 +716,19 @@ void unwrapping(char *out, int id)
     }else{
         printf("unknown packet recieved\n");
     }
+
+
+    int payload_size = 0;
+    char outputs[1024];
+    int my_socket = 0;
+            shared_clients[id].PN = 9;
+            shared_clients[id].playerID = '0';
+            payload_size = makeAccept(outputs, id);
+            my_socket = shared_clients[id].socket;
+
+            print_bytes(outputs, payload_size);
+            send(my_socket,outputs, payload_size,0);
+            memset(outputs, 0, payload_size);
 
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
@@ -800,6 +816,7 @@ void gameloop()
 {
     printf("Started game loop! (it will run forever - use ctrl+C)\n");
     int i = 0;
+
     /*currently does not do shit - but it does not have to*/
     while (1)
     {
@@ -814,6 +831,8 @@ void gameloop()
             3) In game - loop over inputs from all players, update gameworld
             4) Check if game ends
             */
+
+
         }
         sleep(1);
     }

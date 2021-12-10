@@ -74,7 +74,7 @@ int makePlayerInput(char* pointer, char input);
 
 
 void *connection_handler(void* args){
-    char inputs[256];
+    char outputs[1024];
     int my_sock = *(int*) args;
     free(args);
 
@@ -95,19 +95,21 @@ void *connection_handler(void* args){
             /*payload_size = makeGameType(inputs, "1");*/
             /*payload_size = makeCheckStatus(inputs);*/
             /*payload_size = makePlayerReady(inputs);*/
-            strcpy(myClient->name,"jeibogu");
-            payload_size = makeJoin(inputs);
-            print_bytes(inputs, payload_size);
-            send(my_sock,inputs, payload_size,0);
-            memset(inputs, 0, payload_size);
-            sleep(1);
+            strcpy(myClient->name,"this is a pack");
+            payload_size = makeJoin(outputs);
+            print_bytes(outputs, payload_size);
+            send(my_sock,outputs, payload_size,0);
+            memset(outputs, 0, payload_size);
+
             /*printf("hey, yolo, nemiz %s", inputs);*/
 
-            /*
+
             sleep(1);
-            if (read(my_sock, buffer, MAXSIZE-1)>0) printf("buffer: %s", buffer);
+            printf("buffer:   \n");
+            while (read(my_sock, buffer, 15)>0) print_bytes(buffer, 15);
+
             fflush(stdout);
-            */
+
         }
     }
     return NULL;
