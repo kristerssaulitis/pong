@@ -35,6 +35,7 @@ struct Client
     char gameType;
     char teamID;
     char ready;
+    char status;
     /*player queue server ari int status*/
     /*game server ari int status*/
     /*player ready = empty*/
@@ -47,10 +48,12 @@ struct Client
     int playerColor1;
 
     /*game state server*/
-    int upKey;
-    int downKey;
-    int leftKey;
-    int rightKey;
+    char upKey;
+    char downKey;
+    char leftKey;
+    char rightKey;
+    char exit;
+    char action;
 
     /*check status ik pec 5 sec*/
     /*game end server*/
@@ -146,7 +149,6 @@ int makeAccept(char* pointer, int id){
     addSep(&buf[13]);
     return 15;
 }
-
 
 int makeMessage(char* pointer, char* message, int id){
     char* buf = pointer;
@@ -349,7 +351,7 @@ void get_shared_memory()
     {
         client_count = shared_memory;
         shared_balls = (struct Ball *)shared_memory + sizeof(int);
-        shared_clients = (struct Client *)(sizeof(shared_balls) + shared_memory);
+        shared_clients = (struct Client *)(sizeof(shared_balls) + shared_balls);
 
         /*initializing objects*/
         *client_count = 0; /*NOT SURE ABOUT THE ORDER -1 or 0*/
@@ -359,7 +361,7 @@ void get_shared_memory()
         {
             struct Client cl = shared_clients[c_iterator];
             cl.PN = -1;
-            cl.status = 0; /*not ready*/
+            cl.status = '0'; /*not ready*/
         }
 
         /*success & error messages*/
@@ -623,7 +625,7 @@ void processPlayerInput(char* data, int size, int id){
         shared_clients[id].rightKey = 1;
     }else if(data[0]=='0'){
         printf("printe kkadu huinu");
-        shared_clients[id].status = 0;
+        shared_clients[id].status = '0';
     }else if(data[0] == '5'){
         printf("printe kkadu huinu");
         /*shared_clients[id].status = 0;*/
@@ -798,14 +800,16 @@ void gameloop()
     /*currently does not do shit - but it does not have to*/
     while (1)
     {
+
+
         for (i = 0; i < *client_count; i++)
         {
-            /*
+            /*  TODO:
             depending on game stage,
-       1) Process lobby
-       2) Decide to start the game
-       3) In game - loop over inputs from all players, update gameworld
-       4) Check if game ends
+            1) Process lobby
+            2) Decide to start the game
+            3) In game - loop over inputs from all players, update gameworld
+            4) Check if game ends
             */
         }
         sleep(1);
@@ -827,8 +831,6 @@ int main(int argc, char **argv)
     for (i = 0; i < 2; i++)
         realport = strsep(&ranodmport, "=");
     port = atoi(realport);
-    printf("tiek līdz šejienei");
-    fflush(stdout);
     int pid = 0;
     printf("SERVER started!\n");
     get_shared_memory();

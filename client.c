@@ -17,12 +17,50 @@ char* host;
 int port;
 struct sockaddr_in remote_address;
 
-
          /*global variables*/
 /*----------------------------------*/
+struct Client *myClient = NULL;
 /*for client to understand at which state it is*/
-int state = 0;
-unsigned int PN = 8766;
+
+
+struct Client {
+    unsigned int PN;
+    char name[20];
+    char playerID;
+    char targetID;
+    char gameType;
+    char teamID;
+    char ready;
+    char message[256];
+
+    int scoreTeam;
+    int score;
+    float playerX1; float playerY1;
+    int playerHeight1; int playerWidth1;
+    int playerColor1;
+
+    /*game state server*/
+    char upKey;
+    char downKey;
+    char leftKey;
+    char rightKey;
+    char exit;
+    char action;
+
+    float ballX; float ballY;
+    int ballRadius; int ballColor;
+    char ballCount;
+
+    float team_goal1X; float team_goal1Y;
+    float team_goal2X; float team_goal2Y;
+    char teamCount; char playerCount;
+    int powerUpCount; char powerUpType;
+    int windowWidth; int windowHeight;
+    int gameDuration;
+    int ID1;
+    float powerUpX1; float powerUpY1;
+    int powerUpWidth1; int powerUpHeight1;
+};
 /*----------------------------------*/
 
 void *connection_handler(void* socket_desc);
@@ -31,7 +69,7 @@ void addInt(int num,  char * buf);
 void addLong(long num,  char * buf);
 void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
-int makeJoin( char* pointer, unsigned char* Username);
+int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
 
 
@@ -57,8 +95,8 @@ void *connection_handler(void* args){
             /*payload_size = makeGameType(inputs, "1");*/
             /*payload_size = makeCheckStatus(inputs);*/
             /*payload_size = makePlayerReady(inputs);*/
-
-            payload_size = makeJoin(inputs,"mani nesauc ko$a");
+            strcpy(myClient->message,"jeibogu");
+            payload_size = makeJoin(inputs);
             /*print_bytes(inputs, payload_size);*/
             send(my_sock,inputs, payload_size,0);
             memset(inputs, 0, payload_size);
@@ -83,8 +121,10 @@ void *connection_handler(void* args){
 
 /*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
 
-int makeJoin(char* pointer, unsigned char* Username){
+int makeJoin(char* pointer ){
     char* buf = pointer;
+    int PN = myClient->PN;
+    unsigned char Username[20] = myClient->name;
 
     addSep(buf);
     addInt(PN, (char*)buf+2);
@@ -99,8 +139,11 @@ int makeJoin(char* pointer, unsigned char* Username){
 
 
 
-int makeMessage(char* pointer, char* message, char playerID){
+int makeMessage(char* pointer ){
     char* buf = pointer;
+    int PN = myClient->PN;
+    char message[256] = myClient->message;
+    char playerID = myClient->playerID;
 
     addSep(buf); /*2*/
     addInt(PN, (char*)buf+2); /*6*/
@@ -115,8 +158,11 @@ int makeMessage(char* pointer, char* message, char playerID){
     return 272;
 }
 
-int makePlayerReady(char* pointer, char playerID){
+int makePlayerReady(char* pointer){
     char* buf = pointer;
+
+    int PN = myClient->PN;
+    char playerID = myClient->playerID;
 
     addSep(buf); /*2*/
     addInt(PN, &buf[2]); /*6*/
@@ -131,6 +177,7 @@ int makePlayerReady(char* pointer, char playerID){
 
 int makePlayerInput(char* pointer, char input){
     char* buf = pointer;
+    int PN = myClient->PN;
 
     addSep(buf); /*2*/
     addInt(PN, (char*)buf+2); /*2+4=6*/
@@ -145,6 +192,7 @@ int makePlayerInput(char* pointer, char input){
 
 int makeCheckStatus (char* pointer){
     char* buf = pointer;
+    int PN = myClient->PN;
 
     addSep(buf); /*2*/
     addInt(PN, (char*)buf+2); /*6*/
@@ -245,7 +293,7 @@ char checksum(int length, char* packet){
 
 
 int main(int argc, char ** argv){
-
+    myClient = malloc(sizeof(struct Client));
     if (argc < 2){
         printf("not enough arguments \n");
         return -1;
