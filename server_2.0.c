@@ -645,7 +645,7 @@ void processJoin(char* data, int size, int id){
     /*could do escaping but we kinda usless only makes the difference if things like player--name recieved we can just not allaw that*/
     int i;
     for(i = 0; (data + i) != '\n' && i< 20; i++){
-        
+
         shared_clients[id].name[i] = *(data +i);
     }
     shared_clients[id].name[i + 1] = '\0';
@@ -679,7 +679,7 @@ int unwrapping(char *out, int id)
                 for(i; i < 1000;i++){
                     out[i] = out[i+1];
                 }
-                
+
             }else if(out[ue + 1] == '*'){
                 int i = ue + 1;
                 for(i; i < 1000;i++){
@@ -688,7 +688,7 @@ int unwrapping(char *out, int id)
             }
         }
     }
-    
+
     /*print_bytes(out, 40);*/
 
     int PN = getPacketNumber(out);
@@ -716,7 +716,7 @@ int unwrapping(char *out, int id)
         return -1;
     }
     printf("valid packet\n");
-    
+
 
     /*printing*/
 /*
@@ -738,18 +738,7 @@ int unwrapping(char *out, int id)
     }
 
     /* Should not be here but in game loop*/
-/*
-            int payload_size = 0;
-            char outputs[1024];
-            int my_socket = 0;
-            shared_clients[id].playerID = '9';
-            payload_size = makeAccept(outputs, id);
-            my_socket = shared_clients[id].socket;
 
-            print_bytes(outputs, payload_size);
-            send(my_socket,outputs, payload_size,0);
-            memset(outputs, 0, payload_size);
-*/
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
     shared_clients[id].PN += 1;
@@ -852,7 +841,16 @@ void gameloop()
             3) In game - loop over inputs from all players, update gameworld
             4) Check if game ends
             */
+            int payload_size = 0;
+            char outputs[1024];
+            int my_socket = 0;
+            shared_clients[i].playerID = '9';
+            payload_size = makeAccept(outputs, i);
+            my_socket = shared_clients[i].socket;
 
+            print_bytes(outputs, payload_size);
+            send(my_socket,outputs, payload_size,0);
+            memset(outputs, 0, payload_size);
 
         }
         sleep(1);

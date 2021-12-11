@@ -97,7 +97,7 @@ void *connection_handler(void* args){
             /*payload_size = makePlayerReady(inputs);*/
             strcpy(myClient->name,"this is a pack");
             payload_size = makeJoin(outputs);
-            
+
 
 /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
 /*
@@ -124,7 +124,7 @@ void *connection_handler(void* args){
                             temp1 = temp2;
                         }
                         outputs[ue] = '?';
-                        outputs[ue+1] = '*'; 
+                        outputs[ue+1] = '*';
                         ue++;
                         es_size++;
                     }else if(outputs[ue] == '-'){
@@ -143,8 +143,8 @@ void *connection_handler(void* args){
                             temp1 = temp2;
                         }
                         /*printf("WTF\n");*/
-                        outputs[ue] = '?';  
-                        outputs[ue+1] = '-'; 
+                        outputs[ue] = '?';
+                        outputs[ue+1] = '-';
                         ue++;
                         es_size++;
                     }
@@ -161,16 +161,13 @@ void *connection_handler(void* args){
             es_size = 0;
             /*printf("hey, yolo, nemiz %s", inputs);*/
 
-/*
-            sleep(0.2);
+
             printf("buffer:   \n");
-            if (read(my_sock, buffer, 15)>0){
-                print_bytes(buffer, 15);
-                fflush(stdout);
-            } 
-*/
+            while (read(my_sock, buffer, 1)>0) printf("this is buf %c", buffer[0]);
+
+            fflush(stdout);
         /*administrative thigs that have to happen after iteration - increment PN | sleep to not overload listener*/
-        myClient->PN += 1; 
+        myClient->PN += 1;
         usleep(1000* 200); /* <-- sitas ir atrumins *un ne nejau tautas baltais amf */
         }
     }
