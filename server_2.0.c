@@ -29,7 +29,7 @@ char checksum(int length, char *packet);
 struct Client
 {
     int PN;
-    char name[20];
+    char name[21];
     char playerID;
     char targetID;
     char gameType;
@@ -489,7 +489,7 @@ void start_network()
         printf("error listening to socket!\n");
         exit(1);
     }
-    printf("Main socket is listening");
+    printf("Main socket is listening\n");
     /*fflush(stdout);*/
     while (1)
     {
@@ -517,6 +517,7 @@ void start_network()
                 /*fflush(stdout);*/
                 shared_clients[new_client_id].socket = client_socket;
                 process_client(new_client_id, client_socket);
+                printf("\ndo we get out of process client!\n");
                 exit(0);
             }
             else
@@ -644,9 +645,11 @@ void processJoin(char* data, int size, int id){
     /*could do escaping but we kinda usless only makes the difference if things like player--name recieved we can just not allaw that*/
     int i;
     for(i = 0; (data + i) != '\n' && i< 20; i++){
-        shared_clients[id].name[i] = data +i;
+        
+        shared_clients[id].name[i] = *(data +i);
     }
-    printf("check name %s", shared_clients[id].name);
+    shared_clients[id].name[i + 1] = '\0';
+    printf("check name %s \n", shared_clients[id].name);
 
 }
 
@@ -664,13 +667,36 @@ void processCheckStatus(char* data, int size, int id){
 
 /*----------------------------------------------------------------------------------*/
 
-void unwrapping(char *out, int id)
+int unwrapping(char *out, int id)
 {
+     /*unescaping packet */
+    int ue;
+    for(ue = 0; ue <= 1000; ue++){
+        if(out[ue] == '?'){
+            if(out[ue + 1] == '-'){
+                out[ue] = '-';
+                int i = ue + 1;
+                for(i; i < 1000;i++){
+                    out[i] = out[i+1];
+                }
+                
+            }else if(out[ue + 1] == '*'){
+                int i = ue + 1;
+                for(i; i < 1000;i++){
+                    out[i] = out[i+1];
+                }
+            }
+        }
+    }
+    
+    /*print_bytes(out, 40);*/
 
     int PN = getPacketNumber(out);
-    if (PN < shared_clients[id].PN){
+    printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);
+    if (PN <= shared_clients[id].PN){
+        print_bytes(out, 35);
         printf("old packet recieved\n");
-        return; /*will not process older packets*/
+        return -1; /*will not process older packets*/
     }
 
     char ID = out[4];
@@ -684,25 +710,19 @@ void unwrapping(char *out, int id)
     char CSP = out[size + 9];
     /*nu itka visam bet hz japateste*/
 
+    printf("checksums are from packet - %i calculated - %i", CSP , CS);
     if(CS != CSP){
         printf("packet checksum is not correct\n");
-        return;
+        return -1;
     }
     printf("valid packet\n");
-
-    /*unescaping packet pagaidam ne jo nav nehuja skaidrs*/
-    /*
-    int ue;
-    for(ue = 0; ue <= size + 10; ue++){
-        if(out[ue] == '?'){
-            if(out[ue + 1] == kas ir? es tevi nedzirdu, viss lab?)
-        }
-    }
-    */
+    
 
     /*printing*/
+/*
     print_bytes(out, size + 10);
     printf("our id is %c", ID);
+*/
     if(ID == '8'){
         processPlayerInput(&out[9], size, id);
     }else if(ID == '1'){
@@ -717,11 +737,11 @@ void unwrapping(char *out, int id)
         printf("unknown packet recieved\n");
     }
 
-
+    /* Should not be here but in game loop*/
+/*
             int payload_size = 0;
             char outputs[1024];
             int my_socket = 0;
-            shared_clients[id].PN = 98;
             shared_clients[id].playerID = '9';
             payload_size = makeAccept(outputs, id);
             my_socket = shared_clients[id].socket;
@@ -729,7 +749,7 @@ void unwrapping(char *out, int id)
             print_bytes(outputs, payload_size);
             send(my_socket,outputs, payload_size,0);
             memset(outputs, 0, payload_size);
-
+*/
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
     shared_clients[id].PN += 1;
@@ -756,7 +776,7 @@ void process_client(int id, int socket)
             read(socket, in, 1);
             if (inpacket == 0)
             {
-                if (in[0] == '-')
+                if (in[0] == '-' && out[i-1] != '?')
                 {
                     /*checking if end of packet or just random dash*/
                     read(socket, in, 1);
@@ -824,6 +844,7 @@ void gameloop()
 
         for (i = 0; i < *client_count; i++)
         {
+            printf("game loop exicutes client count is %i", *client_count);
             /*  TODO:
             depending on game stage,
             1) Process lobby

@@ -97,19 +97,81 @@ void *connection_handler(void* args){
             /*payload_size = makePlayerReady(inputs);*/
             strcpy(myClient->name,"this is a pack");
             payload_size = makeJoin(outputs);
-            print_bytes(outputs, payload_size);
-            send(my_sock,outputs, payload_size,0);
-            memset(outputs, 0, payload_size);
+            
 
+/*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
+/*
+            printf("HERE A!");
+            print_bytes(outputs, payload_size);
+*/
+            /*escaping packet*/
+            int ue;
+            int es_size = 0;
+            for(ue = 2; ue < payload_size - 2; ue++){
+                if(outputs[ue] == '?'){
+                        int i = ue + 1;
+                        char temp1;
+                        char temp2;
+                        for(i; i <= payload_size;i++){
+                            if(i == ue+1){
+                                temp1 = outputs[i+1];
+                                temp2 = outputs[i+1];
+                                outputs[i+1] = outputs[i];
+                            }else{
+                            temp2 = outputs[i+1];
+                            outputs[i+1] = temp1;
+                            }
+                            temp1 = temp2;
+                        }
+                        outputs[ue] = '?';
+                        outputs[ue+1] = '*'; 
+                        ue++;
+                        es_size++;
+                    }else if(outputs[ue] == '-'){
+                        int i = ue + 1;
+                        char temp1;
+                        char temp2;
+                        for(i; i <= payload_size;i++){
+                            if(i == ue+1){
+                                temp1 = outputs[i+1];
+                                temp2 = outputs[i+1];
+                                outputs[i+1] = outputs[i];
+                            }else{
+                            temp2 = outputs[i+1];
+                            outputs[i+1] = temp1;
+                            }
+                            temp1 = temp2;
+                        }
+                        /*printf("WTF\n");*/
+                        outputs[ue] = '?';  
+                        outputs[ue+1] = '-'; 
+                        ue++;
+                        es_size++;
+                    }
+                }
+/*
+            printf("HERE B!");
+            print_bytes(outputs, payload_size + es_size);
+*/
+/*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+
+
+            send(my_sock,outputs, payload_size + es_size,0);
+            memset(outputs, 0, payload_size +es_size);
+            es_size = 0;
             /*printf("hey, yolo, nemiz %s", inputs);*/
 
-
-            sleep(1);
+/*
+            sleep(0.2);
             printf("buffer:   \n");
-            while (read(my_sock, buffer, 15)>0) print_bytes(buffer, 15);
-
-            fflush(stdout);
-
+            if (read(my_sock, buffer, 15)>0){
+                print_bytes(buffer, 15);
+                fflush(stdout);
+            } 
+*/
+        /*administrative thigs that have to happen after iteration - increment PN | sleep to not overload listener*/
+        myClient->PN += 1; 
+        usleep(1000* 200); /* <-- sitas ir atrumins *un ne nejau tautas baltais amf */
         }
     }
     return NULL;
