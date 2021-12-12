@@ -203,7 +203,7 @@ void reader(int my_sock){
         {
 
             read(socket, in, 1);
-            printf("es eju kur es griby2 %c\n", );
+            printf("es eju kur es griby2 %c\n", in[0]);
             if (inpacket == 0)
             {
                     printf("es eju kur es griby\n");
