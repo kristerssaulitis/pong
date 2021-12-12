@@ -72,42 +72,36 @@ char checksum(int length, char* packet);
 int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
 
+void reader(int my_sock){
+    printf("yolo\n");
+    char buffer [MAXSIZE];
+    while(1){
 
-void *connection_handler(void* args){
-    char outputs[1024];
-    int my_sock = *(int*) args;
-    free(args);
-
-    if(connect(my_sock,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0){
-        printf("ERROR connecting\n");
-        exit(1);
-    }else{
-        char buffer [MAXSIZE];
+        printf("tu mirsti?\n");
+        /*
+        if(read(my_sock, buffer, 1)){
+        print_bytes(buffer, 1);
+        }
+        */
+        fflush(stdout);
         memset(buffer, 0, MAXSIZE);
-        printf("good connection\n");
-        while(1){
-            strcpy(buffer, "");
+    }
+    return;
+}
 
+void writer(int my_sock){
+    char outputs[MAXSIZE];
+    while(1){
         /*for sending from client to server*/
-            int payload_size = 0;
-            /*scanf("%s",inputs);*/     /*input from terminal for tests*/
-            /*payload_size = makeJoin(inputs, "qwertyuiopasdfghjklz");*/
-            /*payload_size = makeGameType(inputs, "1");*/
-            /*payload_size = makeCheckStatus(inputs);*/
-            /*payload_size = makePlayerReady(inputs);*/
-            strcpy(myClient->name,"this is a pack");
-            payload_size = makeJoin(outputs);
+        int payload_size = 0;
+        strcpy(myClient->name,"this is a pack");
+        payload_size = makeJoin(outputs);
 
-
-/*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
-/*
-            printf("HERE A!");
-            print_bytes(outputs, payload_size);
-*/
+        /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
-            int ue;
-            int es_size = 0;
-            for(ue = 2; ue < payload_size - 2; ue++){
+        int ue;
+        int es_size = 0;
+        for(ue = 2; ue < payload_size - 2; ue++){
                 if(outputs[ue] == '?'){
                         int i = ue + 1;
                         char temp1;
@@ -149,31 +143,32 @@ void *connection_handler(void* args){
                         es_size++;
                     }
                 }
-/*
-            printf("HERE B!");
-            print_bytes(outputs, payload_size + es_size);
-*/
-/*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+    /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+        send(my_sock,outputs, payload_size + es_size,0);
+        memset(outputs, 0, payload_size +es_size);
+        es_size = 0;
 
-
-            send(my_sock,outputs, payload_size + es_size,0);
-            memset(outputs, 0, payload_size +es_size);
-            es_size = 0;
-            /*printf("hey, yolo, nemiz %s", inputs);*/
-
-
-            printf("buffer:   \n");
-            while (read(my_sock, buffer, 1)>0) printf("this is buf %c", buffer[0]);
-
-            fflush(stdout);
-        /*administrative thigs that have to happen after iteration - increment PN | sleep to not overload listener*/
         myClient->PN += 1;
-        usleep(1000* 200); /* <-- sitas ir atrumins *un ne nejau tautas baltais amf */
-        }
+        usleep(1000* 200);
+    }
+    return;
+    }
+
+/*
+void *connection_handler(void* args){
+
+    int my_sock = *(int*) args;
+    free(args);
+
+    if(connect(my_sock,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0){
+        printf("ERROR connecting\n");
+        exit(1);
+    }else{
+        printf("good connection\n");
     }
     return NULL;
 }
-
+*/
 
 
 
@@ -266,9 +261,6 @@ int makeCheckStatus (char* pointer){
     addSep(&buf[12]);
     return 14;
 }
-
-
-
 
 char printable_char(char c){
     if(isprint(c) != 0 ) return c;
@@ -401,17 +393,31 @@ int main(int argc, char ** argv){
         return -1;
     }
 
-    int *socketname = malloc(sizeof(int));
-    *socketname = my_socket;
-
     /*
     printf("tiek līdz šejienei");
     fflush(stdout);
     */
+   if(connect(my_socket,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0){
+        printf("ERROR connecting\n");
+        exit(1);
+    }else{
+        printf("good connection\n");
+        int pid = fork();
+        if (pid == 0){
+            reader(my_socket);
+            printf("hello ble\n");
+        }
+        else{
+            writer(my_socket);
+        }
+    }
 
+    /*tread*/
+    /*
     pthread_t tred;
     pthread_create(&tred, NULL, connection_handler, socketname);
     pthread_join(tred, 0);
+    */
 
     return 0;
 }
