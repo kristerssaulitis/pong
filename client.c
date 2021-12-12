@@ -72,17 +72,190 @@ char checksum(int length, char* packet);
 int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
 
-void reader(int my_sock){
-    char buffer [MAXSIZE];
-    while(1){
+int getPacketNumber(char *packet)
+{
+    int val = 0;
 
-        read(my_sock, buffer, 15);
-        // printf("yolo again %c\n", buffer[0]);
-        print_bytes(buffer, 15);
-        memset(buffer, 0, MAXSIZE);
-        sleep(1);
+    int j = 0;
+    int i;
+    for (i = 3; i >= 0; --i)
+    {
+        val += (packet[i] & 0xFF) << (8 * j);
+        ++j;
     }
-    return;
+
+    return val;
+}
+
+long getPacketSize(char *packet)
+{
+    int val = 0;
+
+    int j = 0;
+    int i;
+    /*15 8*/
+    for (i = 8; i >= 5; --i)
+    {
+        val += (packet[i] & 0xFF) << (8 * j);
+        ++j;
+    }
+
+    return val;
+}
+
+int unwrapping(char *out){
+
+    printf("es eju kur es griby");
+     /*unescaping packet */
+    int ue;
+    for(ue = 0; ue <= 1000; ue++){
+        if(out[ue] == '?'){
+            if(out[ue + 1] == '-'){
+                out[ue] = '-';
+                int i = ue + 1;
+                for(i; i < 1000;i++){
+                    out[i] = out[i+1];
+                }
+
+            }else if(out[ue + 1] == '*'){
+                int i = ue + 1;
+                for(i; i < 1000;i++){
+                    out[i] = out[i+1];
+                }
+            }
+        }
+    }
+
+    print_bytes(out, 40);
+
+    int PN = getPacketNumber(out);
+    /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
+    if (PN <= myClient->PN){
+        print_bytes(out, 35);
+        printf("old packet recieved\n");
+        return -1;
+    }
+
+
+    char ID = out[4];
+    /*can check ID but overall Id will be more imoortant later*/
+
+    int size = getPacketSize(out);
+    /*int n = 0;*/
+    /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
+
+    char CS = checksum(size+9, out);
+    char CSP = out[size + 9];
+    /*nu itka visam bet hz japateste*/
+
+    /*printf("checksums are from packet - %i calculated - %i", CSP , CS);*/
+    if(CS != CSP){
+        printf("packet checksum is not correct\n");
+        return -1;
+    }
+    /*printf("valid packet\n");*/
+
+
+    /*printing*/
+/*
+    print_bytes(out, size + 10);
+    printf("our id is %c", ID);
+*/
+    if(ID == '2'){
+        printf("unknown packet recieved 2\n");
+    }else if(ID == '3'){
+        printf("unknown packet recieved 3\n");
+    }else if(ID == '7'){
+        printf("unknown packet recieved 7\n");
+    }else if(ID == '5'){
+        printf("unknown packet recieved 5\n");
+    }else if(ID == '4'){
+        printf("unknown packet recieved 4\n");
+    }else if (ID == '10'){
+        printf("unknown packet recieved 10\n");
+    }
+    else{
+        printf("unknown packet recieved\n");
+    }
+
+    /* Should not be here but in game loop*/
+
+    /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
+    /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
+    myClient->PN += 1;
+    fflush(stdout);
+
+}
+
+
+void reader(int my_sock){
+    char in[1];
+    int sepCounter = 0;
+    int inpacket = 1;
+    /*0 = ja', 1 = nē*/
+    int i = 0;
+    printf("\n");
+    while (1)
+    {
+        printf("es eju kur es griby1\n");
+        char out[1000];
+        while (1)
+        {
+
+            read(socket, in, 1);
+            printf("es eju kur es griby2 %c\n", );
+            if (inpacket == 0)
+            {
+                    printf("es eju kur es griby\n");
+
+                if (in[0] == '-' && out[i-1] != '?')
+                {
+                    /*checking if end of packet or just random dash*/
+                    read(socket, in, 1);
+                    if (in[0] == '-')
+                    {
+                        ++sepCounter;
+                        if (sepCounter == 2)
+                        {
+                            sepCounter = 0;
+                            inpacket = 1;
+
+                            out[i] = '\0';
+                            i = 0;
+                            unwrapping(out);
+                            memset(out, 0, 8);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        out[i] = '-';
+                        out[i + 1] = in[0];
+                        i++;
+                    }
+                }
+                else
+                {
+                    out[i] = in[0];
+                }
+                i++;
+            }
+            else
+            {
+                if (in[0] == '-')
+                {
+                    read(socket, in, 1);
+                    if (in[0] == '-')
+                    {
+                        fflush(stdout);
+                        ++sepCounter;
+                        inpacket = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void writer(int my_sock){
@@ -90,7 +263,8 @@ void writer(int my_sock){
     while(1){
         /*for sending from client to server*/
         int payload_size = 0;
-        strcpy(myClient->name,"this is a pack");
+        strcpy(myClient->name,"yo");
+        myClient->PN += 1;
         payload_size = makeJoin(outputs);
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
@@ -140,11 +314,12 @@ void writer(int my_sock){
                     }
                 }
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+
         send(my_sock,outputs, payload_size + es_size,0);
         memset(outputs, 0, payload_size +es_size);
         es_size = 0;
 
-        myClient->PN += 1;
+
         usleep(1000* 200);
     }
     return;
@@ -345,6 +520,7 @@ char checksum(int length, char* packet){
 
 int main(int argc, char ** argv){
     myClient = malloc(sizeof(struct Client));
+    myClient->PN = 0;
     if (argc < 2){
         printf("not enough arguments \n");
         return -1;
@@ -401,7 +577,6 @@ int main(int argc, char ** argv){
         int pid = fork();
         if (pid == 0){
             reader(my_socket);
-            printf("hello ble\n");
         }
         else{
             writer(my_socket);

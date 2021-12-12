@@ -365,7 +365,7 @@ void get_shared_memory()
         for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++)
         {
             struct Client cl = shared_clients[c_iterator];
-            cl.PN = -1;
+            cl.PN = 0;
             cl.status = '0'; /*not ready*/
         }
 
@@ -694,7 +694,7 @@ int unwrapping(char *out, int id)
     int PN = getPacketNumber(out);
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
     if (PN <= shared_clients[id].PN){
-        print_bytes(out, 35);
+        /*print_bytes(out, 35);*/
         printf("old packet recieved\n");
         return -1; /*will not process older packets*/
     }
@@ -821,6 +821,67 @@ writer (int id, int socket){
     char outputs[1024];
     int my_socket = 0;
     while(1){
+        shared_clients[id].PN++;
+
+        shared_clients[id].playerID = '9';
+        payload_size = makeAccept(outputs, id);
+
+        /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
+            /*escaping packet*/
+        int ue;
+        int es_size = 0;
+        for(ue = 2; ue < payload_size - 2; ue++){
+                if(outputs[ue] == '?'){
+                        int i = ue + 1;
+                        char temp1;
+                        char temp2;
+                        for(i; i <= payload_size;i++){
+                            if(i == ue+1){
+                                temp1 = outputs[i+1];
+                                temp2 = outputs[i+1];
+                                outputs[i+1] = outputs[i];
+                            }else{
+                            temp2 = outputs[i+1];
+                            outputs[i+1] = temp1;
+                            }
+                            temp1 = temp2;
+                        }
+                        outputs[ue] = '?';
+                        outputs[ue+1] = '*';
+                        ue++;
+                        es_size++;
+                    }else if(outputs[ue] == '-'){
+                        int i = ue + 1;
+                        char temp1;
+                        char temp2;
+                        for(i; i <= payload_size;i++){
+                            if(i == ue+1){
+                                temp1 = outputs[i+1];
+                                temp2 = outputs[i+1];
+                                outputs[i+1] = outputs[i];
+                            }else{
+                            temp2 = outputs[i+1];
+                            outputs[i+1] = temp1;
+                            }
+                            temp1 = temp2;
+                        }
+                        /*printf("WTF\n");*/
+                        outputs[ue] = '?';
+                        outputs[ue+1] = '-';
+                        ue++;
+                        es_size++;
+                    }
+                }
+    /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+
+        my_socket = socket;
+
+        print_bytes(outputs , payload_size);
+        write(my_socket, outputs, payload_size + es_size);
+        memset(outputs, 0, payload_size +es_size);
+        es_size = 0;
+        usleep(1000 * 500);
+        /*
         shared_clients[id].playerID = '9';
         payload_size = makeAccept(outputs, id);
         my_socket = socket;
@@ -834,6 +895,7 @@ writer (int id, int socket){
         write(socket,outputs,payload_size);
         fflush(stdout);
         usleep(1000 * 500);
+        */
     }
 
 }
