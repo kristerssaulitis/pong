@@ -752,19 +752,17 @@ reciever (int id, int socket){
     int inpacket = 1;
     /*0 = ja', 1 = nē*/
 
-    printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
+ /*   printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);*/
 
     int i = 0;
     printf("\n");
     while (1)
     {
         shared_clients[id].socket = socket;
-        printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
         char out[1000];
         while (1)
         {
             shared_clients[id].socket = socket;
-            printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
             read(socket, in, 1);
             if (inpacket == 0)
             {
@@ -822,18 +820,22 @@ writer (int id, int socket){
     int payload_size = 0;
     char outputs[1024];
     int my_socket = 0;
-    shared_clients[id].playerID = '9';
-    payload_size = makeAccept(outputs, id);
-    my_socket = socket;
-    printf("the client whom to send %i and its socket %i | total client count %i\n", id ,my_socket, *client_count);
+    while(1){
+        shared_clients[id].playerID = '9';
+        payload_size = makeAccept(outputs, id);
+        my_socket = socket;
+        printf("the client whom to send %i and its socket %i | total client count %i\n", id ,my_socket, *client_count);
 
-    print_bytes(outputs , payload_size);
-    write(my_socket, outputs, payload_size);
-    memset(outputs, 0, payload_size);
+        print_bytes(outputs , payload_size);
+        write(my_socket, outputs, payload_size);
+        memset(outputs, 0, payload_size);
 
-    printf("payload size is %i", payload_size);
-    write(socket,outputs,payload_size);
-    fflush(stdout);
+        printf("payload size is %i", payload_size);
+        write(socket,outputs,payload_size);
+        fflush(stdout);
+        usleep(1000 * 500);
+    }
+
 }
 
 void process_client(int id, int socket){
