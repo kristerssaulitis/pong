@@ -515,7 +515,7 @@ void start_network()
             {
 
                 /*fflush(stdout);*/
-                shared_clients[new_client_id].socket = client_socket;
+                /*shared_clients[new_client_id].socket = client_socket;*/
                 process_client(new_client_id, client_socket);
                 printf("\ndo we get out of process client!\n");
                 exit(0);
@@ -692,7 +692,7 @@ int unwrapping(char *out, int id)
     /*print_bytes(out, 40);*/
 
     int PN = getPacketNumber(out);
-    printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);
+    /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
     if (PN <= shared_clients[id].PN){
         print_bytes(out, 35);
         printf("old packet recieved\n");
@@ -710,12 +710,12 @@ int unwrapping(char *out, int id)
     char CSP = out[size + 9];
     /*nu itka visam bet hz japateste*/
 
-    printf("checksums are from packet - %i calculated - %i", CSP , CS);
+    /*printf("checksums are from packet - %i calculated - %i", CSP , CS);*/
     if(CS != CSP){
         printf("packet checksum is not correct\n");
         return -1;
     }
-    printf("valid packet\n");
+    /*printf("valid packet\n");*/
 
 
     /*printing*/
@@ -746,22 +746,25 @@ int unwrapping(char *out, int id)
 
 }
 
-void process_client(int id, int socket)
-{
+reciever (int id, int socket){
     char in[1];
     int sepCounter = 0;
     int inpacket = 1;
     /*0 = ja', 1 = nē*/
 
-    printf("suka blet id ir !!!!! -> %i <- !!!!!!", id);
+    printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
 
     int i = 0;
     printf("\n");
     while (1)
     {
+        shared_clients[id].socket = socket;
+        printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
         char out[1000];
         while (1)
         {
+            shared_clients[id].socket = socket;
+            printf("suka blet socket ir !!!!! -> %i <- !!!!!!\n", socket);
             read(socket, in, 1);
             if (inpacket == 0)
             {
@@ -813,6 +816,34 @@ void process_client(int id, int socket)
             }
         }
     }
+}
+
+writer (int id, int socket){
+    int payload_size = 0;
+    char outputs[1024];
+    int my_socket = 0;
+    shared_clients[id].playerID = '9';
+    payload_size = makeAccept(outputs, id);
+    my_socket = socket;
+    printf("the client whom to send %i and its socket %i | total client count %i\n", id ,my_socket, *client_count);
+
+    print_bytes(outputs , payload_size);
+    write(my_socket, outputs, payload_size);
+    memset(outputs, 0, payload_size);
+
+    printf("payload size is %i", payload_size);
+    write(socket,outputs,payload_size);
+    fflush(stdout);
+}
+
+void process_client(int id, int socket){
+    int pid = fork();
+    if (pid == 0){
+        reciever(id, socket);
+    }
+    else{
+        writer(id, socket);
+    }
     /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
 }
 
@@ -841,16 +872,23 @@ void gameloop()
             3) In game - loop over inputs from all players, update gameworld
             4) Check if game ends
             */
+           /*
             int payload_size = 0;
             char outputs[1024];
             int my_socket = 0;
             shared_clients[i].playerID = '9';
             payload_size = makeAccept(outputs, i);
             my_socket = shared_clients[i].socket;
+            printf("the client whom to send %i and its socket %i | total client count %i\n", i ,my_socket, *client_count);
 
-            print_bytes(outputs, payload_size);
-            send(my_socket,outputs, payload_size,0);
+            print_bytes(outputs , payload_size);
+            write(my_socket, outputs, payload_size);
             memset(outputs, 0, payload_size);
+
+            printf("payload size is %i", payload_size);
+            write(socket,outputs,payload_size);
+            fflush(stdout);
+            */
 
         }
         sleep(1);
