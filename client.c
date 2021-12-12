@@ -73,18 +73,14 @@ int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
 
 void reader(int my_sock){
-    printf("yolo\n");
     char buffer [MAXSIZE];
     while(1){
 
-        printf("tu mirsti?\n");
-        /*
-        if(read(my_sock, buffer, 1)){
-        print_bytes(buffer, 1);
-        }
-        */
-        fflush(stdout);
+        read(my_sock, buffer, 15);
+        // printf("yolo again %c\n", buffer[0]);
+        print_bytes(buffer, 15);
         memset(buffer, 0, MAXSIZE);
+        sleep(1);
     }
     return;
 }
