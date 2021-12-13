@@ -103,6 +103,32 @@ long getPacketSize(char *packet)
     return val;
 }
 
+void processAccept(out){
+    printf("this is accept\n");
+}
+
+void processMessage(out){
+    printf("this is message\n");
+}
+
+void processLobby(out){
+    printf("this is lobby\n");
+}
+
+void processGameReady(out){
+    printf("this is game ready\n");
+}
+
+void processGameState(out){
+    printf("this is game state\n");
+}
+
+void processGameEnd(out){
+    printf("this is game end\n");
+}
+
+
+
 int unwrapping(char *out){
      /*unescaping packet */
     int ue;
@@ -162,16 +188,22 @@ int unwrapping(char *out){
 */
     if(ID == '2'){
         printf("unknown packet recieved 2\n");
+        processAccept(out);
     }else if(ID == '3'){
         printf("unknown packet recieved 3\n");
+        processMessage(out);
     }else if(ID == '7'){
         printf("unknown packet recieved 7\n");
+        processLobby(out);
     }else if(ID == '5'){
         printf("unknown packet recieved 5\n");
+        processGameReady(out);
     }else if(ID == '4'){
         printf("unknown packet recieved 4\n");
+        processGameState(out);
     }else if (ID == '10'){
         printf("unknown packet recieved 10\n");
+        processGameEnd(out);
     }
     else{
         printf("unknown packet recieved\n");

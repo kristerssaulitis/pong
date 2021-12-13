@@ -644,6 +644,7 @@ void processPlayerInput(char* data, int size, int id){
 
 void processJoin(char* data, int size, int id){
     /*could do escaping but we kinda usless only makes the difference if things like player--name recieved we can just not allaw that*/
+    printf("this is packet 1\n");
     int i;
     for(i = 0; (data + i) != '\n' && i< 20; i++){
 
@@ -654,11 +655,15 @@ void processJoin(char* data, int size, int id){
 
 }
 
-void processGameType(char* data, int size, int id){
-    shared_clients[id].gameType = *data;
+void processMessage(char* data, int size, int id){
+    printf("this is packet 3\n");
+    /*shared_clients[id].gameType = *data;*/
+
+
 }
 
-void processPlayerRedy(char* data, int size, int id){
+void processLobby(char* data, int size, int id){
+    printf("this is packet 3\n");
     shared_clients[id].status = 1; /*changes from 0 to 1 to indicate that player is ready packet 6*/
 }
 
@@ -729,11 +734,11 @@ int unwrapping(char *out, int id)
     }else if(ID == '1'){
         processJoin(&out[9], size, id);
     }else if(ID == '3'){
-        processGameType(&out[9], size, id);
+        processMessage(&out[9], size, id);
     }else if(ID == '6'){
         processPlayerRedy(&out[9], size, id);
     }else if(ID == '9'){
-        processCheckStatus(&out[9], size, id);
+        processLobby(&out[9], size, id);
     }else{
         printf("unknown packet recieved\n");
     }
