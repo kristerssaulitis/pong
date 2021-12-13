@@ -735,13 +735,15 @@ int unwrapping(char *out, int id)
         processJoin(&out[9], size, id);
     }else if(ID == '3'){
         processMessage(&out[9], size, id);
-    }else if(ID == '6'){
-        processPlayerRedy(&out[9], size, id);
+    }
+    /*else if(ID == '6'){
+        processPlayerReady(&out[9], size, id);
     }else if(ID == '9'){
         processLobby(&out[9], size, id);
     }else{
         printf("unknown packet recieved\n");
     }
+    */
 
     /* Should not be here but in game loop*/
 
