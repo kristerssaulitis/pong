@@ -178,11 +178,13 @@ int makeLobby(char* pointer,  int id){
     strcpy(name,shared_clients[id].name);
     char count = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
+    int i = 0;
 
     addSep(buf); /*2*/
     addInt(PN, &buf[2]); /*6*/
     addChar(&buf[6], '4'); /* packetID 7*/
-    addInt(22, &buf[7]); /*packet size 11*/
+    addInt(22, &buf[7]);
+/*here will be the apaksa aizkomentetais kods*/
     addChar(&buf[11], count); /*12*/
     addChar(&buf[12], playerID);
     add_string(name, &buf[13], 20);
@@ -190,6 +192,12 @@ int makeLobby(char* pointer,  int id){
     addChar(&buf[32], checkSum_Char); /*13*/
     addSep(&buf[33]);
     return 35;
+    /*
+    addInt(1 + 21*(*client_count), &buf[7]);
+    for (i; i < (*client_count); i++){
+
+    }
+    */
 }
 
 int makeGameReady( char* pointer, int id ){
@@ -654,7 +662,7 @@ void processJoin(char* data, int size, int id){
 }
 
 void processGameType(char* data, int size, int id){
-    shared_clients[id].gameType = data;
+    shared_clients[id].gameType = *data;
 }
 
 void processPlayerRedy(char* data, int size, int id){
@@ -741,12 +749,30 @@ int unwrapping(char *out, int id)
 
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
-    shared_clients[id].PN += 1;
-    fflush(stdout);
+
+    /*
+        shared_clients[id].PN += 1;
+        fflush(stdout);
+        char outputs[1024];
+
+        int my_socket, payload_size;
+
+        shared_clients[id].PN++;
+        shared_clients[id].playerID = '9';
+        payload_size = makeAccept(outputs, id);
+        my_socket = shared_clients[id].socket;
+
+        print_bytes(outputs , payload_size );
+        send(my_socket, outputs, payload_size , 0);
+        memset(outputs, 0, payload_size);
+
+        usleep(1000 * 500);
+    */
+
 
 }
 
-reciever (int id, int socket){
+void reciever (int id, int socket){
     char in[1];
     int sepCounter = 0;
     int inpacket = 1;
@@ -816,7 +842,7 @@ reciever (int id, int socket){
     }
 }
 
-writer (int id, int socket){
+void writer (int id, int socket){
     int payload_size = 0;
     char outputs[1024];
     int my_socket = 0;
@@ -874,13 +900,26 @@ writer (int id, int socket){
                 }
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
 
-        my_socket = socket;
 
-        print_bytes(outputs , payload_size);
-        write(my_socket, outputs, payload_size + es_size);
+
+        my_socket = shared_clients[id].socket;
+
+        print_bytes(outputs , payload_size + es_size);
+        send(my_socket, outputs, payload_size + es_size, 0);
         memset(outputs, 0, payload_size +es_size);
         es_size = 0;
         usleep(1000 * 500);
+
+        shared_clients[id].PN++;
+
+        shared_clients[id].playerID = '7';
+        payload_size = makeAccept(outputs, id);
+        my_socket = shared_clients[id].socket;
+
+        print_bytes(outputs , payload_size + es_size);
+        send(my_socket, outputs, payload_size + es_size, 0);
+        memset(outputs, 0, payload_size +es_size);
+        es_size = 0;
         /*
         shared_clients[id].playerID = '9';
         payload_size = makeAccept(outputs, id);
@@ -903,10 +942,10 @@ writer (int id, int socket){
 void process_client(int id, int socket){
     int pid = fork();
     if (pid == 0){
-        reciever(id, socket);
+        writer(id, socket);
     }
     else{
-        writer(id, socket);
+        reciever(id, socket);
     }
     /*Can write to char out[] untill the end -- is detected when detected send it to unwraper (also empty out[] for next packet) and wait untill -- detected again to start next packet*/
 }

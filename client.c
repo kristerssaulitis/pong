@@ -104,8 +104,6 @@ long getPacketSize(char *packet)
 }
 
 int unwrapping(char *out){
-
-    printf("es eju kur es griby");
      /*unescaping packet */
     int ue;
     for(ue = 0; ue <= 1000; ue++){
@@ -126,16 +124,17 @@ int unwrapping(char *out){
         }
     }
 
-    print_bytes(out, 40);
+
 
     int PN = getPacketNumber(out);
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
     if (PN <= myClient->PN){
-        print_bytes(out, 35);
+        /*print_bytes(out, 11);*/
         printf("old packet recieved\n");
         return -1;
     }
 
+    /*print_bytes(out, 11);*/
 
     char ID = out[4];
     /*can check ID but overall Id will be more imoortant later*/
@@ -187,7 +186,6 @@ int unwrapping(char *out){
 
 }
 
-
 void reader(int my_sock){
     char in[1];
     int sepCounter = 0;
@@ -197,20 +195,19 @@ void reader(int my_sock){
     printf("\n");
     while (1)
     {
-        printf("es eju kur es griby1\n");
+        /*char buffer[1240];
+        if (read(socket, buffer, 15)>0) print_bytes(buffer, 15);
+        fflush(stdout);
         char out[1000];
-        while (1)
-        {
-
-            read(socket, in, 1);
-            printf("es eju kur es griby2 %c\n", in[0]);
+        */
+        char out[1000];
+        while (read(my_sock, in, 1)){
             if (inpacket == 0)
             {
-                    printf("es eju kur es griby\n");
 
                 if (in[0] == '-' && out[i-1] != '?')
                 {
-                    /*checking if end of packet or just random dash*/
+
                     read(socket, in, 1);
                     if (in[0] == '-')
                     {
@@ -222,6 +219,7 @@ void reader(int my_sock){
 
                             out[i] = '\0';
                             i = 0;
+                            print_bytes(out, 11);
                             unwrapping(out);
                             memset(out, 0, 8);
                             break;
@@ -244,7 +242,7 @@ void reader(int my_sock){
             {
                 if (in[0] == '-')
                 {
-                    read(socket, in, 1);
+                    read(my_sock, in, 1);
                     if (in[0] == '-')
                     {
                         fflush(stdout);
@@ -255,6 +253,7 @@ void reader(int my_sock){
                 }
             }
         }
+        usleep(1000*100);
     }
 }
 
