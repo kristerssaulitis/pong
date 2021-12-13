@@ -19,9 +19,10 @@ int port;
 
 /*Shared memory pointers*/
 void *shared_memory = NULL;
-int *client_count = NULL; /*client count starts from 0 so to get client count <- client_count + 1*/
+int *client_count = NULL; /*client count starts from 0 so to get client count <- client_count + 1 <- might not be true fake news*/
 struct Ball *shared_balls = NULL;
 struct Client *shared_clients = NULL;
+char* out_packets = NULL;
 
 char checksum(int length, char *packet);
 
@@ -56,6 +57,8 @@ struct Client
     char rightKey;
     char exit;
     char action;
+    float team_goal1X; float team_goal1Y;
+    float team_goal2X; float team_goal2Y;
 
     /*check status ik pec 5 sec*/
     /*game end server*/
@@ -66,9 +69,6 @@ struct Ball
     float ballX; float ballY;
     int ballRadius; int ballColor;
     char ballCount;
-
-    float team_goal1X; float team_goal1Y;
-    float team_goal2X; float team_goal2Y;
     char teamCount; char playerCount;
     int powerUpCount; char powerUpType;
     int windowWidth; int windowHeight;
@@ -141,15 +141,17 @@ int makeAccept(char* pointer, int id){
     int PN = shared_clients[id].PN;
     char playerID = shared_clients[id].playerID;
 
-    addSep(buf); /*2*/
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '2'); /* packetID 7*/
-    addInt(1, &buf[7]); /*packet size 11*/
-    addChar(&buf[11], playerID); /*12*/
-    char checkSum_Char = checksum( 10 , &buf[2]);
-    addChar(&buf[12], checkSum_Char); /*13*/
-    addSep(&buf[13]);
-    return 15;
+    int ret = 0;
+
+    addSep(buf); /*2*/ ret += 2;
+    addInt(PN, &buf[ret]); /*6*/ ret += 4;
+    addChar(&buf[ret], '2'); /* packetID 7*/ ret += 1;
+    addInt(1, &buf[ret]); /*packet size 11*/ ret += 4;
+    addChar(&buf[ret], playerID); /*12*/ ret += 1;
+    char checkSum_Char = checksum( 12 , &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret+=1;
+    addSep(&buf[ret]); ret += 2;
+    return ret;
 }
 
 int makeMessage(char* pointer, char* message, int id){
@@ -157,18 +159,19 @@ int makeMessage(char* pointer, char* message, int id){
     int PN = shared_clients[id].PN;
     char targetID = shared_clients[id].targetID;
     char sourceID = 'a';
+    int ret = 0;
     /*[0=chat, 1=info, 2=error]*/
-    addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*6*/
-    addChar(&buf[6], '3'); /* packetID 7*/
-    addInt(258, &buf[7]); /*packet size 11*/
-    addChar(&buf[11], targetID); /*12*/
-    addChar(&buf[12], sourceID); /*13*/
-    add_string(message, &buf[13], 256); /*256+13 = 269*/
-    char checkSum_Char = checksum(267, &buf[2]); /**/
-    addChar(&buf[269], checkSum_Char); /*270*/
-    addSep(&buf[270]); /*270*/
-    return 272;
+    addSep(buf); /*2*/ ret += 2;
+    addInt(PN, (char*)buf+ret); /*6*/ ret += 4;
+    addChar(&buf[ret], '3'); /* packetID 7*/ ret += 1;
+    addInt(258, &buf[ret]); /*packet size 11*/ ret += 4;
+    addChar(&buf[ret], targetID); /*12*/ ret += 1;
+    addChar(&buf[ret], sourceID); /*13*/ ret += 1;
+    add_string(message, &buf[ret], 256); /*256+13 = 269*/ ret += 256;
+    char checkSum_Char = checksum(ret-2, &buf[2]); /**/
+    addChar(&buf[ret], checkSum_Char); /*270*/  ret += 1;
+    addSep(&buf[ret]); /*270*/ ret += 2;
+    return ret;
 }
 
 int makeLobby(char* pointer,  int id){
@@ -178,148 +181,133 @@ int makeLobby(char* pointer,  int id){
     strcpy(name,shared_clients[id].name);
     char count = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
+    char playerCount = shared_balls->playerCount;
     int i = 0;
-
-    addSep(buf); /*2*/
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '4'); /* packetID 7*/
-    addInt(22, &buf[7]);
+    int ret = 0;
+    addSep(buf); /*2*/ ret += 2;
+    addInt(PN, &buf[ret]); /*6*/ ret += 4;
+    addChar(&buf[ret], '4'); /* packetID 7*/ ret += 1;
+    addInt(1+ 21*atoi(playerCount), &buf[ret]); ret += 4;
 /*here will be the apaksa aizkomentetais kods*/
-    addChar(&buf[11], count); /*12*/
-    addChar(&buf[12], playerID);
-    add_string(name, &buf[13], 20);
-    char checkSum_Char = checksum(31, &buf[2]);
-    addChar(&buf[32], checkSum_Char); /*13*/
-    addSep(&buf[33]);
-    return 35;
-    /*
-    addInt(1 + 21*(*client_count), &buf[7]);
-    for (i; i < (*client_count); i++){
-
+    addChar(&buf[ret], count); /*12*/ ret += 1;
+    addInt(1 + 21*atoi(playerCount), &buf[ret]); ret += 4;
+    for (i; i < atoi(playerCount); i++){
+        addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
+        add_string(shared_clients[i].name, &buf[ret], 20); ret += 20;
     }
-    */
+    char checkSum_Char = checksum( ret-2, &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret += 1;
+    addSep(&buf[ret]); ret += 2;
+    return ret;
+
 }
 
 int makeGameReady( char* pointer, int id ){
     char* buf = pointer;
-
+    int i = 0;
     int PN = shared_clients[id].PN;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
     char teamCount = shared_balls->teamCount;
     char teamID = shared_clients[id].teamID;
-    float team_goal1X = shared_balls->team_goal1X;
-    float team_goal1Y = shared_balls->team_goal1Y;
-    float team_goal2X = shared_balls->team_goal2X;
-    float team_goal2Y = shared_balls->team_goal2Y;
-    char ready = shared_clients[id].ready;
-    char name[20];
-    strcpy(name,shared_clients[id].name);
-    float playerX1 = shared_clients[id].playerX1;
-    float playerY1 = shared_clients[id].playerY1;
-    int playerHeight1 = shared_clients[id].playerHeight1;
-    int playerWidth1 = shared_clients[id].playerWidth1;
     char playerCount = shared_balls->playerCount;
-    char playerID = shared_clients[id].playerID;
+    int ret = 0;
 
-    addSep(buf);
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '5'); /* packetID 7*/
-    addInt(66, &buf[7]); /*packet size 11*/
-    addInt(windowWidth, &buf[11]);
-    addInt(windowHeight, &buf[15]);
-    addChar(&buf[19], teamCount);
-    addChar(&buf[20], teamID);
-    addInt(team_goal1X, &buf[21]);
-    addInt(team_goal1Y, &buf[25]);
-    addInt(team_goal2X, &buf[29]);
-    addInt(team_goal2Y, &buf[33]);
-    addChar(&buf[37], playerCount);
-    addChar(&buf[38], playerID);
-    addChar(&buf[39], ready);
-    add_string(name, &buf[40], 20);
-    addInt(playerX1, &buf[60]);
-    addInt(playerY1, &buf[64]);
-    addInt(playerWidth1, &buf[68]);
-    addInt(playerHeight1, &buf[72]);
-    char checkSum_Char = checksum(75, &buf[2]);
-    addChar(&buf[76], checkSum_Char); /*13*/
-    addSep(&buf[77]);
-    return 79;
+    addSep(buf); ret += 2;
+    addInt(PN, &buf[ret]); /*6*/ ret += 4;
+    addChar(&buf[ret], '5'); /* packetID 7*/ ret += 1;
+    addInt(10+17*atoi(teamCount) + 39*atoi(playerCount), &buf[ret]); /*packet size 11*/ ret += 4;
+    addInt(windowWidth, &buf[ret]); ret += 4;
+    addInt(windowHeight, &buf[ret]); ret += 4;
+    addChar(&buf[ret], teamCount); ret += 1;
+    for (i; i < atoi(teamCount); i++){
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        addInt(shared_clients[i].team_goal1X, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal1Y, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal2X, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal2Y, &buf[ret]); ret += 4;
+    }
+    addChar(&buf[ret], playerCount);
+    for (i; i < atoi(playerCount); i++){
+        addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
+        addChar(&buf[ret], shared_clients[i].ready); ret += 1;
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        add_string(shared_clients[i].name, &buf[ret], 20); ret += 10;
+        addInt(shared_clients[i].playerX1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerY1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerWidth1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerHeight1, &buf[ret]); ret += 4;
+    }
+    char checkSum_Char = checksum(ret-2, &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret += 1;
+    addSep(&buf[ret]); ret += 2;
+    return ret;
 }
 
 int makeGameState( char* pointer, int id ){
     char* buf = pointer;
+    int i = 0;
+    int ret = 0;
 
     int PN = shared_clients[id].PN;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
     char teamCount = shared_balls->teamCount;
-    char teamID = shared_clients[id].teamID;
-    int scoreTeam = shared_clients[id].scoreTeam;
-    float team_goal1X = shared_balls->team_goal1X;
-    float team_goal1Y = shared_balls->team_goal1Y;
-    float team_goal2X = shared_balls->team_goal2X;
-    float team_goal2Y = shared_balls->team_goal2Y;
-    float playerX1 = shared_clients[id].playerX1;
-    float playerY1 = shared_clients[id].playerY1;
-    int playerHeight1 = shared_clients[id].playerHeight1;
-    int playerWidth1 = shared_clients[id].playerWidth1;
     char playerCount = shared_balls->playerCount;
     char ballCount = shared_balls->ballCount;
-    float ballX = shared_balls->ballX;
-    float ballY = shared_balls->ballY;
-    int ballRadius = shared_balls->ballRadius;
-    int ballColor = shared_balls->ballColor;
     char powerUpCount = shared_balls->powerUpCount;
-    char powerUpType = shared_balls->powerUpType;
-    float powerUpX1 = shared_balls->powerUpX1;
-    float powerUpY1 = shared_balls->powerUpY1;
-    int powerUpWidth1 = shared_balls->powerUpWidth1;
-    int powerUpHeight1 = shared_balls->powerUpHeight1;
-    char playerID = shared_clients[id].playerID;
 
-    addSep(buf);
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '7'); /* packetID 7*/
-    addInt(81, &buf[7]); /*packet size 11*/
+    addSep(buf); ret += 2;
+    addInt(PN, &buf[ret]); /*6*/ ret += 4;
+    addChar(&buf[ret], '7'); /* packetID 7*/ ret += 1;
+    addInt(12+21*atoi(teamCount) + 18*atoi(playerCount) + 13*atoi(ballCount) + 17*atoi(powerUpCount), &buf[ret]); /*packet size 11*/ ret += 4;
 /*start the data seg*/
-    addInt(windowWidth, &buf[11]);
-    addInt(windowHeight, &buf[15]);
-    addChar(&buf[19], teamCount);
-    addChar(&buf[20], teamID);
-    addInt(scoreTeam, &buf[21]);
-    addInt(team_goal1X, &buf[25]);
-    addInt(team_goal1Y, &buf[29]);
-    addInt(team_goal2X, &buf[33]);
-    addInt(team_goal2Y, &buf[37]);
-    addChar(&buf[41], playerCount);
-    addChar(&buf[42], playerID);
-    addChar(&buf[43], teamID);
-    addInt(playerX1, &buf[44]);
-    addInt(playerY1, &buf[48]);
-    addInt(playerHeight1, &buf[52]);
-    addInt(playerWidth1, &buf[56]);
-    addChar(&buf[60], ballCount);
-    addInt(ballX, &buf[61]);
-    addInt(ballY, &buf[65]);
-    addInt(ballRadius, &buf[69]);
-    addChar(&buf[73], ballColor);
-    addChar(&buf[74], powerUpCount);
-    addChar(&buf[74], powerUpType);
-    addInt(powerUpX1, &buf[75]);
-    addInt(powerUpY1, &buf[79]);
-    addInt(powerUpWidth1, &buf[83]);
-    addInt(powerUpHeight1, &buf[87]);
+    addInt(windowWidth, &buf[ret]); ret += 4;
+    addInt(windowHeight, &buf[ret]); ret += 4;
+    addChar(&buf[ret], teamCount); ret += 1;
+    for (i; i < atoi(teamCount); i++){
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        addInt(shared_clients[i].scoreTeam, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal1X, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal1Y, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal2X, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].team_goal2Y, &buf[ret]); ret += 4;
+    }
+    addChar(&buf[63], playerCount); ret += 1;
+    for (i = 0; i < atoi(playerCount); i++){
+        addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        addInt(shared_clients[i].playerX1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerY1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerWidth1, &buf[ret]); ret += 4;
+        addInt(shared_clients[i].playerHeight1, &buf[ret]); ret += 4;
+    }
+    addChar(&buf[ret], ballCount); ret += 1;
+    for (i = 0; i < atoi(ballCount); i++){
+        addInt(shared_balls->ballX, &buf[ret]); ret += 4;
+        addInt(shared_balls->ballY, &buf[ret]); ret += 4;
+        addInt(shared_balls->ballRadius, &buf[ret]); ret += 4;
+        addChar(&buf[ret], shared_balls->ballColor); ret += 1;
+    }
+    addChar(&buf[ret], powerUpCount); ret += 1;
+    for (i = 0; i < atoi(powerUpCount); i++){
+        addChar(&buf[ret], shared_balls->powerUpType); ret += 1;
+        addInt(shared_balls->powerUpX1, &buf[ret]); ret += 4;
+        addInt(shared_balls->powerUpY1, &buf[ret]); ret += 4;
+        addInt(shared_balls->powerUpWidth1, &buf[ret]); ret += 4;
+        addInt(shared_balls->powerUpHeight1, &buf[ret]); ret += 4;
+    }
     /*end the data seg*/
-    char checkSum_Char = checksum(90, &buf[2]);
-    addChar(&buf[91], checkSum_Char); /*13*/
-    addSep(&buf[92]);
-    return 94;
+    char checkSum_Char = checksum(ret-2, &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret += 1;
+    addSep(&buf[ret]); ret += 2;
+    return ret;
 }
 
 int makeGameEnd (char* pointer, int id, char status ){
     char* buf = pointer;
+    int ret = 0;
+    int i = 0;
 
     int PN = shared_clients[id].PN;
     int scoreTeam = shared_clients[id].scoreTeam;
@@ -332,39 +320,44 @@ int makeGameEnd (char* pointer, int id, char status ){
     strcpy(name,shared_clients[id].name);
     int score = shared_clients[id].score;
 
-    addSep(buf);
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '10'); /* packetID 7*/
-    addInt(42, &buf[7]); /*packet size 11*/
+    addSep(buf); ret += 2;
+    addInt(PN, &buf[ret]); /*6*/ ret += 4;
+    addChar(&buf[ret], '10'); /* packetID 7*/ ret += 1;
+    addInt(11+ atoi(teamCount)*5 + atoi(playerCount)*26, &buf[ret]); /*packet size 11*/ ret += 4;
 /*start the data seg*/
-    addChar(&buf[11], status);
-    addInt(scoreTeam, &buf[12]);
-    addInt(gameDuration, &buf[16]);
-    addChar(&buf[18], teamCount);
-    addChar(&buf[19], teamID);
-    addInt(score, &buf[20]);
-    addChar(&buf[24], playerCount);
-    addChar(&buf[25], playerID);
-    addChar(&buf[26], teamID);
-    addInt(score, &buf[27]);
-    add_string(name, &buf[31], 20);
+    addChar(&buf[ret], status); ret += 1;
+    addInt(scoreTeam, &buf[ret]); ret += 4;
+    addInt(gameDuration, &buf[ret]); ret += 4;
+    addChar(&buf[ret], teamCount); ret += 1;
+    for (i = 0; i < atoi(teamCount); i++){
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        addInt(shared_clients[i].scoreTeam, &buf[ret]); ret += 4;
+    }
+    addChar(&buf[ret], playerCount); ret += 1;
+    for (i = 0; i < atoi(playerCount); i++){
+        addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
+        addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
+        addInt(shared_clients[i].score, &buf[ret]); ret += 4;
+        add_string(shared_clients[i].name, &buf[ret], 20); ret += 20;
+    }
     /*end the data seg*/
-    char checkSum_Char = checksum(51, &buf[2]);
-    addChar(&buf[51], checkSum_Char); /*13*/
-    addSep(&buf[52]);
-    return 54;
+    char checkSum_Char = checksum(ret-2, &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret += 1;
+    addSep(&buf[ret]); ret += 2;
+    return ret;
 }
 /*pretty functions*/
 /*_____________________________________________________________________________________________________________*/
 /*shared memory*/
 void get_shared_memory()
 {
-    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int);     /*size of int might not be needed initially wanted to use for PN but its better to store it in client struct now acts like a protective buffer I guess can be deleted*/
+    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + 4 * 400;
     if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0))
     {
         client_count = shared_memory;
         shared_balls = (struct Ball *)shared_memory + sizeof(int);
         shared_clients = (struct Client *)(sizeof(shared_balls) + shared_balls);
+        out_packets = (char*)(shared_clients + MAX_CLIENTS * sizeof(struct Client));
 
         /*initializing objects*/
         *client_count = 0; /*NOT SURE ABOUT THE ORDER -1 or 0*/

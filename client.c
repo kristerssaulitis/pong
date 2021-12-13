@@ -324,112 +324,93 @@ void writer(int my_sock){
     return;
     }
 
-/*
-void *connection_handler(void* args){
-
-    int my_sock = *(int*) args;
-    free(args);
-
-    if(connect(my_sock,(struct sockaddr *) &remote_address,sizeof(remote_address)) < 0){
-        printf("ERROR connecting\n");
-        exit(1);
-    }else{
-        printf("good connection\n");
-    }
-    return NULL;
-}
-*/
-
-
-
 /*Packet functions*/
-
-
-/*Note although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
+/*Note - although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
 
 int makeJoin(char* pointer ){
     char* buf = pointer;
     int PN = myClient->PN;
     char name[20];
+    int ret = 0;
     strcpy(name,myClient->name);
 
-    addSep(buf);
-    addInt(PN, (char*)buf+2);
-    addChar(&buf[6], '1'); /* packetID*/
-    addInt(20, &buf[7]); /*packet size*/
-    add_string(name, &buf[11], 20);
-    char checkSum_Char = checksum(29, &buf[2]);
-    addChar(&buf[31], checkSum_Char);
-    addSep(&buf[32]);
-    return 34;
+    addSep(buf); ret +=2;
+    addInt(PN, (char*)buf+ret); ret +=4;
+    addChar(&buf[ret], '1'); /* packetID*/ ret +=1;
+    addInt(20, &buf[ret]); /*packet size*/ ret +=4;
+    add_string(name, &buf[ret], 20); ret +=20;
+    char checkSum_Char = checksum(ret-2, &buf[2]);
+    addChar(&buf[ret], checkSum_Char); ret +=1;
+    addSep(&buf[ret]); ret +=2;
+    return ret;
 }
-
-
 
 int makeMessage(char* pointer ){
     char* buf = pointer;
     int PN = myClient->PN;
+    int ret = 0;
     char message[256];
     strcpy(message,myClient->name);
     char playerID = myClient->playerID;
 
-    addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*6*/
-    addChar(&buf[6], '3'); /* packetID 7*/
-    addInt(258, &buf[7]); /*packet size 11*/
-    addChar(&buf[11], playerID); /*12*/
-    addChar(&buf[12], playerID); /*13*/
-    add_string(message, &buf[13], strlen(message)); /*256+13 = 269*/
-    char checkSum_Char = checksum(267, &buf[2]); /**/
-    addChar(&buf[269], checkSum_Char); /*270*/
-    addSep(&buf[270]); /*270*/
-    return 272;
+    addSep(buf); /*2*/ ret +=2;
+    addInt(PN, &buf[ret]); /*6*/ ret +=4;
+    addChar(&buf[ret], '3'); /* packetID 7*/ ret +=1;
+    addInt(258, &buf[ret]); /*packet size 11*/ ret +=4;
+    addChar(&buf[ret], playerID); /*12*/ ret +=1;
+    addChar(&buf[ret], playerID); /*13*/ ret +=1;
+    add_string(message, &buf[ret], strlen(message)); /*256+13 = 269*/ ret +=256;
+    char checkSum_Char = checksum(ret-2, &buf[2]); /**/
+    addChar(&buf[ret], checkSum_Char); /*270*/ ret +=1;
+    addSep(&buf[ret]); /*270*/ ret +=2;
+    return ret;
 }
 
 int makePlayerReady(char* pointer){
     char* buf = pointer;
-
+    int ret = 0;
     int PN = myClient->PN;
     char playerID = myClient->playerID;
 
-    addSep(buf); /*2*/
-    addInt(PN, &buf[2]); /*6*/
-    addChar(&buf[6], '3'); /* packetID 7*/
-    addInt(1, &buf[7]); /*packet size 11*/
-    addChar(&buf[11], playerID); /*12*/
-    char checkSum_Char = checksum( 10 , &buf[2]);
-    addChar(&buf[12], checkSum_Char); /*13*/
-    addSep(&buf[13]);
-    return 15;
+    addSep(buf); /*2*/ ret +=2;
+    addInt(PN, &buf[ret]); /*6*/ ret +=4;
+    addChar(&buf[ret], '3'); /* packetID 7*/ ret +=1;
+    addInt(1, &buf[ret]); /*packet size 11*/ ret +=4;
+    addChar(&buf[ret], playerID); /*12*/ ret +=1;
+    char checkSum_Char = checksum( ret-2 , &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*13*/ ret +=1;
+    addSep(&buf[ret]); ret +=2;
+    return ret;
 }
 
 int makePlayerInput(char* pointer, char input){
     char* buf = pointer;
     int PN = myClient->PN;
-
-    addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*2+4=6*/
-    addChar(&buf[6], '8'); /* packetID 6+1=7*/
-    addInt(1, &buf[7]); /*packet size 7+4=11*/
-    addChar(&buf[11], input); /*11+1=12*/
-    char checkSum_Char = checksum( 10 , &buf[2]);
-    addChar(&buf[12], checkSum_Char); /*12+1=13*/
-    addSep(&buf[13]);/*13+2=15*/
-    return 15;
+    int ret = 0;
+    addSep(buf); /*2*/ ret +=2;
+    addInt(PN, &buf[ret]); /*6*/ ret +=4;
+    addChar(&buf[ret], '8'); /* packetID 6+1=7*/ ret +=1;
+    addInt(1, &buf[ret]); /*packet size 7+4=11*/ ret +=4;
+    addChar(&buf[ret], input); /*11+1=12*/ ret +=1;
+    char checkSum_Char = checksum( ret -2 , &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*12+1=13*/ ret +=1;
+    addSep(&buf[ret]); ret +=2;
+    return ret;
 }
 
 int makeCheckStatus (char* pointer){
     char* buf = pointer;
     int PN = myClient->PN;
 
-    addSep(buf); /*2*/
-    addInt(PN, (char*)buf+2); /*6*/
-    addChar(&buf[6], '9'); /* packetID 7*/
-    addInt(0, &buf[7]); /*packet size 11*/
-    char checkSum_Char = checksum( 9 , &buf[2]);
-    addChar(&buf[11], checkSum_Char); /*13*/
-    addSep(&buf[12]);
-    return 14;
+    int ret = 0;
+    addSep(buf); /*2*/ ret +=2;
+    addInt(PN, &buf[ret]); /*6*/ ret +=4;
+    addChar(&buf[6], '9'); /* packetID 7*/ ret +=1;
+    addInt(0, &buf[7]); /*packet size 11*/ ret +=4;
+    char checkSum_Char = checksum( ret-2 , &buf[2]);
+    addChar(&buf[ret], checkSum_Char); /*12+1=13*/ ret +=1;
+    addSep(&buf[ret]); ret +=2;
+    return ret;
 }
 
 char printable_char(char c){
@@ -513,9 +494,6 @@ char checksum(int length, char* packet){
     return res;
 }
 /*______________________________________________________________________________________-*/
-
-
-
 
 int main(int argc, char ** argv){
     myClient = malloc(sizeof(struct Client));
