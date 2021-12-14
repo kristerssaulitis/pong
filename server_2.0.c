@@ -644,7 +644,7 @@ void processPlayerInput(char* data, int size, int id){
 
 void processJoin(char* data, int size, int id){
     /*could do escaping but we kinda usless only makes the difference if things like player--name recieved we can just not allaw that*/
-    printf("this is packet 1\n");
+    printf("this is packet 1 join\n");
     int i;
     for(i = 0; (data + i) != '\n' && i< 20; i++){
 
@@ -656,18 +656,19 @@ void processJoin(char* data, int size, int id){
 }
 
 void processMessage(char* data, int size, int id){
-    printf("this is packet 3\n");
+    printf("this is packet 3 messige\n");
     /*shared_clients[id].gameType = *data;*/
 
 
 }
 
-void processLobby(char* data, int size, int id){
-    printf("this is packet 3\n");
+void processPlayerReady(char* data, int size, int id){
+    printf("this is packet 6 player ready\n");
     shared_clients[id].status = 1; /*changes from 0 to 1 to indicate that player is ready packet 6*/
 }
 
 void processCheckStatus(char* data, int size, int id){
+    printf("this is packet 9 player status\n");
 /*empty for now - this packet is used to check if disconects happen*/
 }
 
@@ -735,17 +736,13 @@ int unwrapping(char *out, int id)
         processJoin(&out[9], size, id);
     }else if(ID == '3'){
         processMessage(&out[9], size, id);
-    }
-    /*else if(ID == '6'){
+    }else if(ID == '6'){
         processPlayerReady(&out[9], size, id);
     }else if(ID == '9'){
-        processLobby(&out[9], size, id);
+        processCheckStatus(&out[9], size, id);
     }else{
         printf("unknown packet recieved\n");
     }
-    */
-
-    /* Should not be here but in game loop*/
 
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
