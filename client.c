@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <ncurses.h>
 
 #define MAXSIZE 1024
 
@@ -71,6 +72,8 @@ void add_string(char* str,  char* buf, int count);
 char checksum(int length, char* packet);
 int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
+int gameloop();
+int keyreading();
 
 int getPacketNumber(char *packet)
 {
@@ -251,7 +254,7 @@ void reader(int my_sock){
 
                             out[i] = '\0';
                             i = 0;
-                            print_bytes(out, 11);
+                            print_bytes(out, 19);
                             unwrapping(out);
                             memset(out, 0, 8);
                             break;
@@ -356,6 +359,45 @@ void writer(int my_sock){
     return;
     }
 
+int keyreading(){
+    int ch;
+    initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+
+    while(1){
+        ch = getch();
+        switch(ch){
+            case KEY_UP:
+                printw("\n UP Arrow");
+                break;
+            case KEY_DOWN:
+                printw("\n DOWN Arrow");
+                break;
+            case KEY_LEFT:
+                printw("\n LEFT Arrow");
+                break;
+            case KEY_RIGHT:
+                printw("\n RIGHT Arrow");
+                break;
+            case KEY_EXIT:
+                printw("\n EXIT Arrow");
+                break;
+            default:
+                printw("\n The pressed key is %c", ch);
+        }
+    }
+
+    endwin();
+    return 0;
+}
+
+int gameloop(){
+    while(1){
+        keyreading();
+    }
+}
 /*Packet functions*/
 /*Note - although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
 
@@ -585,10 +627,15 @@ int main(int argc, char ** argv){
         printf("good connection\n");
         int pid = fork();
         if (pid == 0){
-            reader(my_socket);
+            gameloop();
         }
         else{
-            writer(my_socket);
+            int pid = fork();
+            if (pid == 0){
+                writer(my_socket);
+            } else {
+                reader(my_socket);
+            }
         }
     }
 

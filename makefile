@@ -7,7 +7,7 @@ server_2.0: server_2.0.o
 	gcc -Wall -std=gnu11 server_2.0.o -o server_2.0.exe
 
 client: client.o
-	gcc -Wall -std=gnu11 client.o -o client.exe -lpthread
+	gcc -Wall -std=gnu11 client.o -o client.exe -lncurses
 
 server_2.0.o: server_2.0.c
 	gcc -Wall -std=gnu11 -c server_2.0.c
