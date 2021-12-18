@@ -197,22 +197,22 @@ int unwrapping(char *out){
 */
 /*koment share subscribe*/
     if(ID == '2'){
-        printf("unknown packet recieved 2\n");
+        printf(" packet recieved 2\n");
         processAccept(out);
     }else if(ID == '3'){
-        printf("unknown packet recieved 3\n");
+        printf(" packet recieved 3\n");
         processMessage(out);
     }else if(ID == '7'){
-        printf("unknown packet recieved 7\n");
+        printf(" packet recieved 7\n");
         processLobby(out);
     }else if(ID == '5'){
-        printf("unknown packet recieved 5\n");
+        printf(" packet recieved 5\n");
         processGameReady(out);
     }else if(ID == '4'){
-        printf("unknown packet recieved 4\n");
+        printf(" packet recieved 4\n");
         processGameState(out);
     }else if (ID == '10'){
-        printf("unknown packet recieved 10\n");
+        printf(" packet recieved 10\n");
         processGameEnd(out);
     }
     else{
@@ -237,11 +237,6 @@ void reader(int my_sock){
     printf("\n");
     while (1)
     {
-        /*char buffer[1240];
-        if (read(socket, buffer, 15)>0) print_bytes(buffer, 15);
-        fflush(stdout);
-        char out[1000];
-        */
         char out[1000];
         while (1){
             read(my_sock, in, 1);
@@ -262,7 +257,7 @@ void reader(int my_sock){
 
                             out[i] = '\0';
                             i = 0;
-                            /*print_bytes(out, 15);*/
+                            print_bytes(out, 15);
                             unwrapping(out);
                             /*memset(out, 0, 1000);*/
                             break;

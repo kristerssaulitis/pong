@@ -885,7 +885,6 @@ void reciever (int id, int socket){
 
 void writer (int id, int my_socket){
 
-    sleep(80);
     int iterator = 0;
     while(1){
         
@@ -898,11 +897,17 @@ void writer (int id, int my_socket){
         int es_size = 0;
         int client_packets_ready = 0;
         int ready_flag = 0;
-
-
-        for(client_packets_ready; shared_clients[client_packets_ready].PNC >= iterator && *client_count <= client_packets_ready ; client_packets_ready++){    /*itterating client_packets_ready*/    }
         
-        if (client_packets_ready == *client_count){
+        /*printf("vai tu te esi + PNC %i un iterators %i\n", shared_clients[0].PNC, iterator);*/
+
+        for(client_packets_ready; shared_clients[client_packets_ready].PNC >= iterator && *client_count >= client_packets_ready ; ++client_packets_ready){  
+            print_bytes(shared_buffer[client_packets_ready].output ,  shared_buffer[client_packets_ready].payload); 
+             /*itterating client_packets_ready*/
+        }
+        
+        printf("vai tu te esi + *client_count %i un client_packets_ready %i\n", *client_count, client_packets_ready);
+
+        if (client_packets_ready-1 == *client_count){
             ready_flag = 1;
             for(g; g <= *client_count ;g++){
                 int ue;
@@ -941,7 +946,7 @@ void writer (int id, int my_socket){
                                     }
                                     temp1 = temp2;
                                 }
-                                /*printf("WTF\n");*/
+                                printf("WTF\n");
                                 shared_buffer[g].output[ue] = '?';
                                 shared_buffer[g].output[ue+1] = '-';
                                 ue++;
@@ -963,6 +968,7 @@ void writer (int id, int my_socket){
         /*print_bytes(outputs , payload_size + es_size);*/
         int suka = 0;
         for(suka; suka <= *client_count && ready_flag; suka++){
+        printf("picinu pacinu kodam uz elli\n");
         send(my_socket, shared_buffer[suka].output, shared_buffer[suka].payload, 0);
         memset(shared_buffer[suka].output, 0, shared_buffer[suka].payload);
         usleep(1000 * 200);
@@ -973,6 +979,7 @@ void writer (int id, int my_socket){
         ready_flag = 0;
         client_packets_ready = 0;
         es_size = 0;
+        usleep(1000 * 100);
 
     }
 
@@ -996,20 +1003,18 @@ void process_client(int id, int socket){
 /*Game logics*/
 void gameloop()
 {
-    sleep(10);
     printf("Started game loop! (it will run forever - use ctrl+C)\n");
     int i = 0;
 
     /*currently does not do shit - but it does not have to*/
     while (1)
     {
-        int players_accepted = 0;
 
         for (i = 0; i < *client_count; i++)
         {
-            printf("game loop exicutes client count is %i\n", *client_count);
+            /*printf("game loop exicutes client count is %i\n", *client_count);
 
-            printf("tas ir vards ja %s\n", shared_clients[i].name);
+            printf("tas ir vards ja %s\n", shared_clients[i].name);*/
 
             
 
@@ -1026,15 +1031,11 @@ void gameloop()
             else if (shared_clients[i].gameStatus == 1){
                 shared_clients[i].status = toChar(i);
                 shared_clients[i].PNC++;
-                printf("kas ir i %i\n", i);
                 /*te talak ir sape*/
                 shared_buffer[i].payload = 0;
                 shared_buffer[i].payload = makeAccept(shared_buffer[i].output, i);
-                print_bytes(shared_buffer[i].output, shared_buffer[i].payload);
-                printf("nu bled un %i\n", shared_buffer[i].payload);
-                fflush(stdout);
-                usleep(1000*900);
-                printf("make accept things in the house tonight");
+                /*print_bytes(shared_buffer[i].output, shared_buffer[i].payload);*/
+                printf("make accept things in the house tonight\n");
             }
             else if (shared_clients[i].gameStatus == 2){
                 printf("yolo 1");
