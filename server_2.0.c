@@ -29,8 +29,8 @@ char checksum(int length, char *packet);
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
 struct Client
 {
-    unsigned int PN;
-    unsigned int PNC;
+    int PN;
+    int PNC;
     char name[21];
     char playerID;
     char targetID;
@@ -222,16 +222,16 @@ int makeGameReady( char* pointer, int id ){
     addInt(10+17*(teamCount) + 39*(playerCount), &buf[ret]); /*packet size 11*/ ret += 4;
     addInt(windowWidth, &buf[ret]); ret += 4;
     addInt(windowHeight, &buf[ret]); ret += 4;
-    addChar(&buf[ret], teamCount); ret += 1;
-    for (i; i < atoi(teamCount); i++){
+    addChar(&buf[ret], teamCou); ret += 1;
+    for (i; i < (teamCount); i++){
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
         addInt(shared_clients[i].team_goal1X, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal1Y, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal2X, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal2Y, &buf[ret]); ret += 4;
     }
-    addChar(&buf[ret], playerCount);
-    for (i; i < atoi(playerCount); i++){
+    addChar(&buf[ret], playerCou);
+    for (i; i < (playerCount); i++){
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         addChar(&buf[ret], shared_clients[i].ready); ret += 1;
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
@@ -255,20 +255,24 @@ int makeGameState( char* pointer, int id ){
     int PN = shared_clients[id].PNC;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
-    char teamCount = shared_balls->teamCount;
-    char playerCount = shared_balls->playerCount;
-    char ballCount = shared_balls->ballCount;
-    char powerUpCount = shared_balls->powerUpCount;
+    char playerCou = shared_balls->playerCount;
+    int playerCount = playerCou - '0';
+    char ballCou = shared_balls->ballCount;
+    int ballCount = ballCou - '0';
+    char powerUpCou = shared_balls->powerUpCount;
+    int powerUpCount = powerUpCou - '0';
+    char teamCou = shared_balls->teamCount;
+    int teamCount = teamCou - '0';
 
     addSep(buf); ret += 2;
     addInt(PN, &buf[ret]); /*6*/ ret += 4;
     addChar(&buf[ret], '7'); /* packetID 7*/ ret += 1;
-    addInt(12+21*atoi(teamCount) + 18*atoi(playerCount) + 13*atoi(ballCount) + 17*atoi(powerUpCount), &buf[ret]); /*packet size 11*/ ret += 4;
+    addInt(12+21*(teamCount) + 18*(playerCount) + 13*(ballCount) + 17*(powerUpCount), &buf[ret]); /*packet size 11*/ ret += 4;
 /*start the data seg*/
     addInt(windowWidth, &buf[ret]); ret += 4;
     addInt(windowHeight, &buf[ret]); ret += 4;
-    addChar(&buf[ret], teamCount); ret += 1;
-    for (i; i < atoi(teamCount); i++){
+    addChar(&buf[ret], teamCou); ret += 1;
+    for (i; i < (teamCount); i++){
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
         addInt(shared_clients[i].scoreTeam, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal1X, &buf[ret]); ret += 4;
@@ -276,8 +280,8 @@ int makeGameState( char* pointer, int id ){
         addInt(shared_clients[i].team_goal2X, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal2Y, &buf[ret]); ret += 4;
     }
-    addChar(&buf[63], playerCount); ret += 1;
-    for (i = 0; i < atoi(playerCount); i++){
+    addChar(&buf[63], playerCou); ret += 1;
+    for (i = 0; i < (playerCount); i++){
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
         addInt(shared_clients[i].playerX1, &buf[ret]); ret += 4;
@@ -285,15 +289,15 @@ int makeGameState( char* pointer, int id ){
         addInt(shared_clients[i].playerWidth1, &buf[ret]); ret += 4;
         addInt(shared_clients[i].playerHeight1, &buf[ret]); ret += 4;
     }
-    addChar(&buf[ret], ballCount); ret += 1;
-    for (i = 0; i < atoi(ballCount); i++){
+    addChar(&buf[ret], ballCou); ret += 1;
+    for (i = 0; i < (ballCount); i++){
         addInt(shared_balls->ballX, &buf[ret]); ret += 4;
         addInt(shared_balls->ballY, &buf[ret]); ret += 4;
         addInt(shared_balls->ballRadius, &buf[ret]); ret += 4;
         addChar(&buf[ret], shared_balls->ballColor); ret += 1;
     }
-    addChar(&buf[ret], powerUpCount); ret += 1;
-    for (i = 0; i < atoi(powerUpCount); i++){
+    addChar(&buf[ret], powerUpCou); ret += 1;
+    for (i = 0; i < (powerUpCount); i++){
         addChar(&buf[ret], shared_balls->powerUpType); ret += 1;
         addInt(shared_balls->powerUpX1, &buf[ret]); ret += 4;
         addInt(shared_balls->powerUpY1, &buf[ret]); ret += 4;
@@ -315,9 +319,11 @@ int makeGameEnd (char* pointer, int id, char status ){
     int PN = shared_clients[id].PNC;
     int scoreTeam = shared_clients[id].scoreTeam;
     int gameDuration = shared_balls->gameDuration;
-    char teamCount = shared_balls->teamCount;
+    char teamCou = shared_balls->teamCount;
+    int teamCount = teamCou - '0';
     char teamID = shared_clients[id].teamID;
-    char playerCount = shared_balls->playerCount;
+    char playerCou = shared_balls->playerCount;
+    int playerCount = playerCou - '0';
     char playerID = shared_clients[id].playerID;
     char name[20];
     strcpy(name,shared_clients[id].name);
@@ -326,18 +332,18 @@ int makeGameEnd (char* pointer, int id, char status ){
     addSep(buf); ret += 2;
     addInt(PN, &buf[ret]); /*6*/ ret += 4;
     addChar(&buf[ret], '10'); /* packetID 7*/ ret += 1;
-    addInt(11+ atoi(teamCount)*5 + atoi(playerCount)*26, &buf[ret]); /*packet size 11*/ ret += 4;
+    addInt(11+ (teamCount)*5 + (playerCount)*26, &buf[ret]); /*packet size 11*/ ret += 4;
 /*start the data seg*/
     addChar(&buf[ret], status); ret += 1;
     addInt(scoreTeam, &buf[ret]); ret += 4;
     addInt(gameDuration, &buf[ret]); ret += 4;
-    addChar(&buf[ret], teamCount); ret += 1;
-    for (i = 0; i < atoi(teamCount); i++){
+    addChar(&buf[ret], teamCou); ret += 1;
+    for (i = 0; i < (teamCount); i++){
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
         addInt(shared_clients[i].scoreTeam, &buf[ret]); ret += 4;
     }
-    addChar(&buf[ret], playerCount); ret += 1;
-    for (i = 0; i < atoi(playerCount); i++){
+    addChar(&buf[ret], playerCou); ret += 1;
+    for (i = 0; i < (playerCount); i++){
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
         addInt(shared_clients[i].score, &buf[ret]); ret += 4;
@@ -699,7 +705,7 @@ int unwrapping(char *out, int id)
         }
     }
 
-    /*print_bytes(out, 40);*/
+    print_bytes(out, 40);
 
     int PN = getPacketNumber(out);
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
@@ -746,6 +752,9 @@ int unwrapping(char *out, int id)
     }else{
         printf("unknown packet recieved\n");
     }
+
+
+    shared_clients[id].PN++;
 
     /* print_bytes(out, size); thiss will not print correctly because it starts withthe beggining of the packet not data segment*/
     /*printf("packet number : %d\npacket ID : %d\npacket size : %d\n ", PN, ID, size);*/
@@ -816,7 +825,7 @@ void reciever (int id, int socket){
                             out[i] = '\0';
                             i = 0;
                             unwrapping(out, id);
-                            memset(out, 0, 8);
+                            memset(out, 0, 1000);
                             break;
                         }
                     }
@@ -860,13 +869,9 @@ void writer (int id, int socket){
     while(1){
         shared_clients[id].PNC++;
         shared_clients[id].playerID = toChar(playerId);
-/*
-        shared_clients[id].targetID = '9';
-
-*/
         /*strcpy(shared_clients[id].name, "dfjnvfsdnvsndf");*/
         payload_size = makeAccept(outputs ,id);
-        print_bytes(outputs, payload_size);
+        /*print_bytes(outputs, payload_size);*/
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
@@ -915,12 +920,9 @@ void writer (int id, int socket){
                     }
                 }
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
-
-
-
         my_socket = shared_clients[id].socket;
 
-        print_bytes(outputs , payload_size + es_size);
+        /*print_bytes(outputs , payload_size + es_size);*/
         send(my_socket, outputs, payload_size + es_size, 0);
         memset(outputs, 0, payload_size +es_size);
         es_size = 0;

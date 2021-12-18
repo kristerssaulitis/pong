@@ -18,15 +18,18 @@ char* host;
 int port;
 struct sockaddr_in remote_address;
 
+
          /*global variables*/
 /*----------------------------------*/
+char outputs[MAXSIZE];
+int payload_size = 0;
 struct Client *myClient = NULL;
 /*for client to understand at which state it is*/
 
 
 struct Client {
-    unsigned int PN;
-    unsigned int PNS;
+    int PN;
+    int PNS;
     char name[20];
     char playerID;
     char targetID;
@@ -160,7 +163,7 @@ int unwrapping(char *out){
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
     if (PN <= myClient->PN){
         /*print_bytes(out, 11);*/
-        printf("old packet recieved\n");
+        /*printf("old packet recieved\n");*/
         return -1;
     }
 
@@ -190,6 +193,7 @@ int unwrapping(char *out){
     print_bytes(out, size + 10);
     printf("our id is %c", ID);
 */
+/*koment share subscribe*/
     if(ID == '2'){
         printf("unknown packet recieved 2\n");
         processAccept(out);
@@ -237,7 +241,8 @@ void reader(int my_sock){
         char out[1000];
         */
         char out[1000];
-        while (read(my_sock, in, 1)){
+        while (1){
+            read(my_sock, in, 1);
             if (inpacket == 0)
             {
 
@@ -255,9 +260,9 @@ void reader(int my_sock){
 
                             out[i] = '\0';
                             i = 0;
-                            print_bytes(out, 19);
+                            /*print_bytes(out, 15);*/
                             unwrapping(out);
-                            memset(out, 0, 8);
+                            /*memset(out, 0, 1000);*/
                             break;
                         }
                     }
@@ -294,13 +299,13 @@ void reader(int my_sock){
 }
 
 void writer(int my_sock){
-    char outputs[MAXSIZE];
     while(1){
         /*for sending from client to server*/
-        int payload_size = 0;
-        strcpy(myClient->name,"yo");
+        if(payload_size <= 0 ){
+            printf("gaidaaaaam!");
+            usleep(1000*100);
+        }else{
         myClient->PNS += 1;
-        payload_size = makeJoin(outputs);
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
@@ -356,7 +361,7 @@ void writer(int my_sock){
 
 
         usleep(1000* 200);
-    }
+    }}
     return;
     }
 
@@ -395,8 +400,32 @@ int keyreading(){
 }
 
 int gameloop(){
+    int state = 0;
+    printf("pilnigs suds");
     while(1){
-        keyreading();
+        /*keyreading();*/
+        if(state ==  0){
+            char name[20];
+            printf("kads ir jusu nickname?");
+            scanf("%s", name);
+            strcpy(myClient->name, name);
+            printf("\nthis is your name %s", myClient->name);
+            payload_size = makeJoin(outputs);
+            printf("yolo 0");
+        }
+        else if (state == 1){
+            printf("yolo 1");
+        }
+        else if (state == 2){
+            printf("yolo 1");
+        }
+        else if (state == 3){
+            printf("yolo 1");
+        }
+        else if (state == 4){
+            printf("yolo 1");
+        }
+        usleep(1000*200);
     }
 }
 /*Packet functions*/
@@ -434,7 +463,7 @@ int makeMessage(char* pointer ){
     addInt(258, &buf[ret]); /*packet size 11*/ ret +=4;
     addChar(&buf[ret], playerID); /*12*/ ret +=1;
     addChar(&buf[ret], playerID); /*13*/ ret +=1;
-    add_string(message, &buf[ret], strlen(message)); /*256+13 = 269*/ ret +=256;
+    add_string(message, &buf[ret], 256); /*256+13 = 269*/ ret +=256;
     char checkSum_Char = checksum(ret-2, &buf[2]); /**/
     addChar(&buf[ret], checkSum_Char); /*270*/ ret +=1;
     addSep(&buf[ret]); /*270*/ ret +=2;
@@ -495,7 +524,7 @@ char printable_char(char c){
 
 void print_bytes(void* packet, int count){
     int i;
-    char *p = (char*) packet;
+    unsigned char *p = (unsigned char*) packet;
     if(count > 999){
         printf("Cannot print more than 999 chars\n");
         return;
