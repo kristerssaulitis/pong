@@ -23,10 +23,17 @@ int *client_count = NULL; /*client count starts from 0 so to get client count <-
 struct Ball *shared_balls = NULL;
 struct Client *shared_clients = NULL;
 char* out_packets = NULL;
+struct OutBuffer *shared_buffer = NULL;
 
 char checksum(int length, char *packet);
 
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
+
+struct OutBuffer{
+    int payload;
+    char output[300];
+};
+
 struct Client
 {
     int PN;
@@ -44,6 +51,8 @@ struct Client
     /*game server ari int status*/
     /*player ready = empty*/
     /*game state server*/
+    int gameStatus;
+
 
     int scoreTeam;
     int score;
@@ -360,13 +369,13 @@ int makeGameEnd (char* pointer, int id, char status ){
 /*shared memory*/
 void get_shared_memory()
 {
-    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + 4 * 400;
+    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + MAX_CLIENTS * sizeof(struct OutBuffer);
     if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0))
     {
         client_count = shared_memory;
         shared_balls = (struct Ball *)shared_memory + sizeof(int);
         shared_clients = (struct Client *)(sizeof(shared_balls) + shared_balls);
-        out_packets = (char*)(shared_clients + MAX_CLIENTS * sizeof(struct Client));
+        shared_buffer = (struct OutBuffer*)(shared_clients + MAX_CLIENTS * sizeof(struct Client));
 
         /*initializing objects*/
         *client_count = 0; /*NOT SURE ABOUT THE ORDER -1 or 0*/
@@ -378,7 +387,14 @@ void get_shared_memory()
             cl.PN = 0;
             cl.PNC = 0;
             cl.status = '0'; /*not ready*/
+            cl.gameStatus = 0;
         }
+        for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++)
+        {
+            struct OutBuffer buf = shared_buffer[c_iterator];
+            buf.payload = 0;
+        }
+        
 
         /*success & error messages*/
         printf("succesfully created buffer - balls and pong sticks\n");
@@ -861,73 +877,97 @@ void reciever (int id, int socket){
     }
 }
 
-void writer (int id, int socket){
-    int payload_size = 0;
-    char outputs[1024];
-    int my_socket = 0;
-    int playerId = id;
+void writer (int id, int my_socket){
 
+    sleep(80);
+    int iterator = 0;
     while(1){
-        shared_clients[id].PNC++;
-        shared_clients[id].playerID = toChar(playerId);
+        
+        
         /*strcpy(shared_clients[id].name, "dfjnvfsdnvsndf");*/
-        payload_size = makeAccept(outputs ,id);
-        /*print_bytes(outputs, payload_size);*/
-
+        /*print_bytes(outputs, payload_size);*
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
-        int ue;
+        int g = 0;
         int es_size = 0;
-        for(ue = 2; ue < payload_size - 2; ue++){
-                if(outputs[ue] == '?'){
-                        int i = ue + 1;
-                        char temp1;
-                        char temp2;
-                        for(i; i <= payload_size;i++){
-                            if(i == ue+1){
-                                temp1 = outputs[i+1];
-                                temp2 = outputs[i+1];
-                                outputs[i+1] = outputs[i];
-                            }else{
-                            temp2 = outputs[i+1];
-                            outputs[i+1] = temp1;
-                            }
-                            temp1 = temp2;
-                        }
-                        outputs[ue] = '?';
-                        outputs[ue+1] = '*';
-                        ue++;
-                        es_size++;
-                    }else if(outputs[ue] == '-'){
-                        int i = ue + 1;
-                        char temp1;
-                        char temp2;
-                        for(i; i <= payload_size;i++){
-                            if(i == ue+1){
-                                temp1 = outputs[i+1];
-                                temp2 = outputs[i+1];
-                                outputs[i+1] = outputs[i];
-                            }else{
-                            temp2 = outputs[i+1];
-                            outputs[i+1] = temp1;
-                            }
-                            temp1 = temp2;
-                        }
-                        /*printf("WTF\n");*/
-                        outputs[ue] = '?';
-                        outputs[ue+1] = '-';
-                        ue++;
-                        es_size++;
-                    }
-                }
-    /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
-        my_socket = shared_clients[id].socket;
+        int client_packets_ready = 0;
+        int ready_flag = 0;
 
+
+        for(client_packets_ready; shared_clients[client_packets_ready].PNC >= iterator && *client_count <= client_packets_ready ; client_packets_ready++){    /*itterating client_packets_ready*/    }
+        
+        if (client_packets_ready == *client_count){
+            ready_flag = 1;
+            for(g; g <= *client_count ;g++){
+                int ue;
+                for(ue = 2; ue < shared_buffer[g].payload - 2; ue++){
+                        if(shared_buffer[g].output[ue] == '?'){
+                                int i = ue + 1;
+                                char temp1;
+                                char temp2;
+                                for(i; i <= shared_buffer[g].payload;i++){
+                                    if(i == ue+1){
+                                        temp1 = shared_buffer[g].output[i+1];
+                                        temp2 = shared_buffer[g].output[i+1];
+                                        shared_buffer[g].output[i+1] = shared_buffer[g].output[i];
+                                    }else{
+                                    temp2 = shared_buffer[g].output[i+1];
+                                    shared_buffer[g].output[i+1] = temp1;
+                                    }
+                                    temp1 = temp2;
+                                }
+                                shared_buffer[g].output[ue] = '?';
+                                shared_buffer[g].output[ue+1] = '*';
+                                ue++;
+                                es_size++;
+                            }else if(shared_buffer[g].output[ue] == '-'){
+                                int i = ue + 1;
+                                char temp1;
+                                char temp2;
+                                for(i; i <= shared_buffer[g].payload;i++){
+                                    if(i == ue+1){
+                                        temp1 = shared_buffer[g].output[i+1];
+                                        temp2 = shared_buffer[g].output[i+1];
+                                        shared_buffer[g].output[i+1] = shared_buffer[g].output[i];
+                                    }else{
+                                    temp2 = shared_buffer[g].output[i+1];
+                                    shared_buffer[g].output[i+1] = temp1;
+                                    }
+                                    temp1 = temp2;
+                                }
+                                /*printf("WTF\n");*/
+                                shared_buffer[g].output[ue] = '?';
+                                shared_buffer[g].output[ue+1] = '-';
+                                ue++;
+                                es_size++;
+                            }
+                        }
+            shared_buffer[g].payload = shared_buffer[g].payload + es_size;
+            es_size = 0;
+            }
+
+
+        }
+            
+    
+
+        
+        
+    /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
         /*print_bytes(outputs , payload_size + es_size);*/
-        send(my_socket, outputs, payload_size + es_size, 0);
-        memset(outputs, 0, payload_size +es_size);
+        int suka = 0;
+        for(suka; suka <= *client_count && ready_flag; suka++){
+        send(my_socket, shared_buffer[suka].output, shared_buffer[suka].payload, 0);
+        memset(shared_buffer[suka].output, 0, shared_buffer[suka].payload);
+        usleep(1000 * 200);
+        }
+
+        suka = 0;
+        g = 0;
+        ready_flag = 0;
+        client_packets_ready = 0;
         es_size = 0;
-        usleep(1000 * 500);
+
     }
 
 }
@@ -960,7 +1000,40 @@ void gameloop()
 
         for (i = 0; i < *client_count; i++)
         {
-            /*printf("game loop exicutes client count is %i\n", *client_count);*/
+            printf("game loop exicutes client count is %i\n", *client_count);
+
+            printf("tas ir vards ja %s\n", shared_clients[i].name);
+
+            if(strlen(shared_clients[i].name) > 0 && strlen(shared_clients[i].name) < 21){
+                shared_clients[i].gameStatus++;
+            }
+
+            /*ifo te*/
+            if(shared_clients[i].gameStatus ==  0){
+                usleep(1000*100);
+            }
+            else if (shared_clients[i].gameStatus == 1){
+                shared_clients[i].status = toChar(i);
+                shared_clients[i].PNC++;
+
+                /*te talak ir sape*/
+                shared_buffer[i].payload = 0;
+                printf("nu bled un %i\n", shared_buffer[i].payload);
+                fflush(stdout);
+                shared_buffer[i].payload = makeAccept(*shared_buffer[i].output, i);
+                usleep(1000*900);
+                printf("make accept things in the house tonight");
+            }
+            else if (shared_clients[i].gameStatus == 2){
+                printf("yolo 1");
+            }
+            else if (shared_clients[i].gameStatus == 3){
+                printf("yolo 1");
+            }
+            else if (shared_clients[i].gameStatus == 4){
+                printf("yolo 1");
+            }
+
             /*  TODO:
             depending on game stage,
             1) Process lobby
@@ -968,23 +1041,7 @@ void gameloop()
             3) In game - loop over inputs from all players, update gameworld
             4) Check if game ends
             */
-           /*
-            int payload_size = 0;
-            char outputs[1024];
-            int my_socket = 0;
-            shared_clients[i].playerID = '9';
-            payload_size = makeAccept(outputs, i);
-            my_socket = shared_clients[i].socket;
-            printf("the client whom to send %i and its socket %i | total client count %i\n", i ,my_socket, *client_count);
-
-            print_bytes(outputs , payload_size);
-            write(my_socket, outputs, payload_size);
-            memset(outputs, 0, payload_size);
-
-            printf("payload size is %i", payload_size);
-            write(socket,outputs,payload_size);
-            fflush(stdout);
-            */
+          
 
         }
         sleep(1);
@@ -1017,6 +1074,7 @@ int main(int argc, char **argv)
     }
     else
     {
+        sleep(7);
         gameloop();
     }
 
