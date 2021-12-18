@@ -25,6 +25,7 @@ struct Client *myClient = NULL;
 
 struct Client {
     unsigned int PN;
+    unsigned int PNS;
     char name[20];
     char playerID;
     char targetID;
@@ -295,7 +296,7 @@ void writer(int my_sock){
         /*for sending from client to server*/
         int payload_size = 0;
         strcpy(myClient->name,"yo");
-        myClient->PN += 1;
+        myClient->PNS += 1;
         payload_size = makeJoin(outputs);
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
@@ -361,7 +362,7 @@ void writer(int my_sock){
 
 int makeJoin(char* pointer ){
     char* buf = pointer;
-    int PN = myClient->PN;
+    int PN = myClient->PNS;
     char name[20];
     int ret = 0;
     strcpy(name,myClient->name);
@@ -379,7 +380,7 @@ int makeJoin(char* pointer ){
 
 int makeMessage(char* pointer ){
     char* buf = pointer;
-    int PN = myClient->PN;
+    int PN = myClient->PNS;
     int ret = 0;
     char message[256];
     strcpy(message,myClient->name);
@@ -401,7 +402,7 @@ int makeMessage(char* pointer ){
 int makePlayerReady(char* pointer){
     char* buf = pointer;
     int ret = 0;
-    int PN = myClient->PN;
+    int PN = myClient->PNS;
     char playerID = myClient->playerID;
 
     addSep(buf); /*2*/ ret +=2;
@@ -417,7 +418,7 @@ int makePlayerReady(char* pointer){
 
 int makePlayerInput(char* pointer, char input){
     char* buf = pointer;
-    int PN = myClient->PN;
+    int PN = myClient->PNS;
     int ret = 0;
     addSep(buf); /*2*/ ret +=2;
     addInt(PN, &buf[ret]); /*6*/ ret +=4;
@@ -432,7 +433,7 @@ int makePlayerInput(char* pointer, char input){
 
 int makeCheckStatus (char* pointer){
     char* buf = pointer;
-    int PN = myClient->PN;
+    int PN = myClient->PNS;
 
     int ret = 0;
     addSep(buf); /*2*/ ret +=2;

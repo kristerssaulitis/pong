@@ -29,7 +29,8 @@ char checksum(int length, char *packet);
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
 struct Client
 {
-    int PN;
+    unsigned int PN;
+    unsigned int PNC;
     char name[21];
     char playerID;
     char targetID;
@@ -138,7 +139,7 @@ char checksum(int length, char* packet){
 
 int makeAccept(char* pointer, int id){
     char* buf = pointer;
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     char playerID = shared_clients[id].playerID;
 
     int ret = 0;
@@ -156,7 +157,7 @@ int makeAccept(char* pointer, int id){
 
 int makeMessage(char* pointer, char* message, int id){
     char* buf = pointer;
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     char targetID = shared_clients[id].targetID;
     char sourceID = 'a';
     int ret = 0;
@@ -176,7 +177,7 @@ int makeMessage(char* pointer, char* message, int id){
 
 int makeLobby(char* pointer,  int id){
     char* buf = pointer;
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     char name[20];
     strcpy(name,shared_clients[id].name);
     char count = shared_balls->playerCount;
@@ -205,7 +206,7 @@ int makeLobby(char* pointer,  int id){
 int makeGameReady( char* pointer, int id ){
     char* buf = pointer;
     int i = 0;
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
     char teamCount = shared_balls->teamCount;
@@ -249,7 +250,7 @@ int makeGameState( char* pointer, int id ){
     int i = 0;
     int ret = 0;
 
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
     char teamCount = shared_balls->teamCount;
@@ -309,7 +310,7 @@ int makeGameEnd (char* pointer, int id, char status ){
     int ret = 0;
     int i = 0;
 
-    int PN = shared_clients[id].PN;
+    int PN = shared_clients[id].PNC;
     int scoreTeam = shared_clients[id].scoreTeam;
     int gameDuration = shared_balls->gameDuration;
     char teamCount = shared_balls->teamCount;
@@ -367,6 +368,7 @@ void get_shared_memory()
         {
             struct Client cl = shared_clients[c_iterator];
             cl.PN = 0;
+            cl.PNC = 0;
             cl.status = '0'; /*not ready*/
         }
 
@@ -844,7 +846,7 @@ void writer (int id, int socket){
     char outputs[1024];
     int my_socket = 0;
     while(1){
-        shared_clients[id].PN++;
+        shared_clients[id].PNC++;
 
         shared_clients[id].playerID = '9';
         payload_size = makeAccept(outputs, id);
