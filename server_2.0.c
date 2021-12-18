@@ -31,7 +31,7 @@ char checksum(int length, char *packet);
 
 struct OutBuffer{
     int payload;
-    char output[300];
+    char output[200];
 };
 
 struct Client
@@ -369,32 +369,38 @@ int makeGameEnd (char* pointer, int id, char status ){
 /*shared memory*/
 void get_shared_memory()
 {
-    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + MAX_CLIENTS * sizeof(struct OutBuffer);
+    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + MAX_CLIENTS * sizeof(struct OutBuffer) + 100;
     if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0))
     {
         client_count = shared_memory;
         shared_balls = (struct Ball *)shared_memory + sizeof(int);
         shared_clients = (struct Client *)(sizeof(shared_balls) + shared_balls);
-        shared_buffer = (struct OutBuffer*)(shared_clients + MAX_CLIENTS * sizeof(struct Client));
+        shared_buffer = (struct OutBuffer *)(shared_clients + MAX_CLIENTS * sizeof(shared_clients));
 
         /*initializing objects*/
         *client_count = 0; /*NOT SURE ABOUT THE ORDER -1 or 0*/
         struct Ball gameball = *shared_balls;
+        int b_punkts = 0;
         int c_iterator = 0;
-        for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++)
-        {
+
+        printf("PILNIGS PIZDJUKS sizeof(struct Client) %i un otrs sizeof(shared_clients) %i\n", sizeof(struct Client), sizeof(shared_clients));
+        fflush(stdout);
+
+        for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++){
             struct Client cl = shared_clients[c_iterator];
+            struct OutBuffer buf = shared_buffer[c_iterator];
+            buf.payload = 0;
             cl.PN = 0;
             cl.PNC = 0;
             cl.status = '0'; /*not ready*/
             cl.gameStatus = 0;
         }
-        for (c_iterator; c_iterator < MAX_CLIENTS; c_iterator++)
-        {
-            struct OutBuffer buf = shared_buffer[c_iterator];
+    /*
+        for (b_punkts; b_punkts < MAX_CLIENTS; b_punkts++){
+            struct OutBuffer buf = shared_buffer[b_punkts];
             buf.payload = 0;
         }
-        
+    */
 
         /*success & error messages*/
         printf("succesfully created buffer - balls and pong sticks\n");
@@ -990,6 +996,7 @@ void process_client(int id, int socket){
 /*Game logics*/
 void gameloop()
 {
+    sleep(10);
     printf("Started game loop! (it will run forever - use ctrl+C)\n");
     int i = 0;
 
@@ -1004,23 +1011,28 @@ void gameloop()
 
             printf("tas ir vards ja %s\n", shared_clients[i].name);
 
-            if(strlen(shared_clients[i].name) > 0 && strlen(shared_clients[i].name) < 21){
-                shared_clients[i].gameStatus++;
-            }
+            
 
             /*ifo te*/
             if(shared_clients[i].gameStatus ==  0){
+
+                if(strlen(shared_clients[i].name) > 0 && strlen(shared_clients[i].name) < 21){
+                    shared_clients[i].gameStatus++;
+                    printf("inkremente game statusu - %i\n", shared_clients[i].gameStatus);
+                }
+
                 usleep(1000*100);
             }
             else if (shared_clients[i].gameStatus == 1){
                 shared_clients[i].status = toChar(i);
                 shared_clients[i].PNC++;
-
+                printf("kas ir i %i\n", i);
                 /*te talak ir sape*/
                 shared_buffer[i].payload = 0;
+                shared_buffer[i].payload = makeAccept(shared_buffer[i].output, i);
+                print_bytes(shared_buffer[i].output, shared_buffer[i].payload);
                 printf("nu bled un %i\n", shared_buffer[i].payload);
                 fflush(stdout);
-                shared_buffer[i].payload = makeAccept(*shared_buffer[i].output, i);
                 usleep(1000*900);
                 printf("make accept things in the house tonight");
             }
@@ -1074,7 +1086,6 @@ int main(int argc, char **argv)
     }
     else
     {
-        sleep(7);
         gameloop();
     }
 
