@@ -149,7 +149,7 @@ int makeAccept(char* pointer, int id){
     addChar(&buf[ret], '2'); /* packetID 7*/ ret += 1;
     addInt(1, &buf[ret]); /*packet size 11*/ ret += 4;
     addChar(&buf[ret], playerID); /*12*/ ret += 1;
-    char checkSum_Char = checksum( 12 , &buf[2]);
+    char checkSum_Char = checksum( ret-2 , &buf[2]);
     addChar(&buf[ret], checkSum_Char); /*13*/ ret+=1;
     addSep(&buf[ret]); ret += 2;
     return ret;
@@ -175,24 +175,24 @@ int makeMessage(char* pointer, char* message, int id){
     return ret;
 }
 
-int makeLobby(char* pointer,  int id){
+int makeLobby(char* pointer, int id){
     char* buf = pointer;
     int PN = shared_clients[id].PNC;
     char name[20];
     strcpy(name,shared_clients[id].name);
     char count = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
-    char playerCount = shared_balls->playerCount;
+    char playerCou = shared_balls->playerCount;
+    int playerCount = playerCou - '0';
     int i = 0;
     int ret = 0;
     addSep(buf); /*2*/ ret += 2;
     addInt(PN, &buf[ret]); /*6*/ ret += 4;
     addChar(&buf[ret], '4'); /* packetID 7*/ ret += 1;
-    addInt(1+ 21*atoi(playerCount), &buf[ret]); ret += 4;
+    addInt(1+ 21*(playerCount), &buf[ret]); ret += 4;
 /*here will be the apaksa aizkomentetais kods*/
     addChar(&buf[ret], count); /*12*/ ret += 1;
-    addInt(1 + 21*atoi(playerCount), &buf[ret]); ret += 4;
-    for (i; i < atoi(playerCount); i++){
+    for (i; i < (playerCount); i++){
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         add_string(shared_clients[i].name, &buf[ret], 20); ret += 20;
     }
@@ -209,15 +209,17 @@ int makeGameReady( char* pointer, int id ){
     int PN = shared_clients[id].PNC;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
-    char teamCount = shared_balls->teamCount;
+    char teamCou = shared_balls->teamCount;
+    int teamCount = teamCou - '0';
     char teamID = shared_clients[id].teamID;
-    char playerCount = shared_balls->playerCount;
+    char playerCou = shared_balls->playerCount;
+    int playerCount = playerCou - '0';
     int ret = 0;
 
     addSep(buf); ret += 2;
     addInt(PN, &buf[ret]); /*6*/ ret += 4;
     addChar(&buf[ret], '5'); /* packetID 7*/ ret += 1;
-    addInt(10+17*atoi(teamCount) + 39*atoi(playerCount), &buf[ret]); /*packet size 11*/ ret += 4;
+    addInt(10+17*(teamCount) + 39*(playerCount), &buf[ret]); /*packet size 11*/ ret += 4;
     addInt(windowWidth, &buf[ret]); ret += 4;
     addInt(windowHeight, &buf[ret]); ret += 4;
     addChar(&buf[ret], teamCount); ret += 1;
@@ -434,7 +436,7 @@ char printable_char(char c)
 void print_bytes(void *packet, int count)
 {
     int i;
-    char *p = (char *)packet;
+    unsigned char *p = (unsigned char *)packet;
     if (count > 999)
     {
         printf("Cannot print more than 999 chars\n");
@@ -654,7 +656,6 @@ void processJoin(char* data, int size, int id){
     }
     shared_clients[id].name[i + 1] = '\0';
     printf("check name %s \n", shared_clients[id].name);
-
 }
 
 void processMessage(char* data, int size, int id){
@@ -771,6 +772,15 @@ int unwrapping(char *out, int id)
 
 }
 
+int toInt(char c) {
+    /* vajag unsigned char*/
+    return c - '0';
+}
+
+char toChar(int i) {
+    return i + '0';
+}
+
 void reciever (int id, int socket){
     char in[1];
     int sepCounter = 0;
@@ -845,11 +855,18 @@ void writer (int id, int socket){
     int payload_size = 0;
     char outputs[1024];
     int my_socket = 0;
+    int playerId = id;
+
     while(1){
         shared_clients[id].PNC++;
+        shared_clients[id].playerID = toChar(playerId);
+/*
+        shared_clients[id].targetID = '9';
 
-        shared_clients[id].playerID = '9';
-        payload_size = makeAccept(outputs, id);
+*/
+        /*strcpy(shared_clients[id].name, "dfjnvfsdnvsndf");*/
+        payload_size = makeAccept(outputs ,id);
+        print_bytes(outputs, payload_size);
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
@@ -908,32 +925,6 @@ void writer (int id, int socket){
         memset(outputs, 0, payload_size +es_size);
         es_size = 0;
         usleep(1000 * 500);
-
-        shared_clients[id].PN++;
-
-        shared_clients[id].playerID = '7';
-        payload_size = makeAccept(outputs, id);
-        my_socket = shared_clients[id].socket;
-
-        print_bytes(outputs , payload_size + es_size);
-        send(my_socket, outputs, payload_size + es_size, 0);
-        memset(outputs, 0, payload_size +es_size);
-        es_size = 0;
-        /*
-        shared_clients[id].playerID = '9';
-        payload_size = makeAccept(outputs, id);
-        my_socket = socket;
-        printf("the client whom to send %i and its socket %i | total client count %i\n", id ,my_socket, *client_count);
-
-        print_bytes(outputs , payload_size);
-        write(my_socket, outputs, payload_size);
-        memset(outputs, 0, payload_size);
-
-        printf("payload size is %i", payload_size);
-        write(socket,outputs,payload_size);
-        fflush(stdout);
-        usleep(1000 * 500);
-        */
     }
 
 }
