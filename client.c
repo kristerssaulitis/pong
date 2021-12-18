@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <ncurses.h>
+#include <sys/mman.h>
 
 #define MAXSIZE 1024
 
@@ -21,8 +22,9 @@ struct sockaddr_in remote_address;
 
          /*global variables*/
 /*----------------------------------*/
-char outputs[MAXSIZE];
-int payload_size = 0;
+void* shared_memory = NULL;
+char* outputs = NULL;
+int* payload_size = NULL;
 struct Client *myClient = NULL;
 /*for client to understand at which state it is*/
 
@@ -299,24 +301,26 @@ void reader(int my_sock){
 }
 
 void writer(int my_sock){
+    int itteration = myClient->PNS;
     while(1){
         /*for sending from client to server*/
-        if(payload_size <= 0 ){
-            printf("gaidaaaaam!");
-            usleep(1000*100);
+        if(myClient->PNS <= itteration){
+            /*printf("gaidaaaaam! un iteration ir %i bet PN ir %i\n", itteration, myClient->PNS);*/
+            usleep(1000*600);
         }else{
-        myClient->PNS += 1;
+        itteration = myClient->PNS;
+        printf("sakam! un payload size ir %i\n", *payload_size);
 
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
             /*escaping packet*/
         int ue;
         int es_size = 0;
-        for(ue = 2; ue < payload_size - 2; ue++){
+        for(ue = 2; ue < *payload_size - 2; ue++){
                 if(outputs[ue] == '?'){
                         int i = ue + 1;
                         char temp1;
                         char temp2;
-                        for(i; i <= payload_size;i++){
+                        for(i; i <= *payload_size;i++){
                             if(i == ue+1){
                                 temp1 = outputs[i+1];
                                 temp2 = outputs[i+1];
@@ -335,7 +339,7 @@ void writer(int my_sock){
                         int i = ue + 1;
                         char temp1;
                         char temp2;
-                        for(i; i <= payload_size;i++){
+                        for(i; i <= *payload_size;i++){
                             if(i == ue+1){
                                 temp1 = outputs[i+1];
                                 temp2 = outputs[i+1];
@@ -354,9 +358,10 @@ void writer(int my_sock){
                     }
                 }
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
-
-        send(my_sock,outputs, payload_size + es_size,0);
-        memset(outputs, 0, payload_size +es_size);
+        print_bytes(outputs, *payload_size + es_size);
+        send(my_sock,outputs, *payload_size + es_size,0);
+        memset(outputs, 0, *payload_size +es_size);
+        /*payload_size = 0;*/
         es_size = 0;
 
 
@@ -409,9 +414,12 @@ int gameloop(){
             printf("kads ir jusu nickname?");
             scanf("%s", name);
             strcpy(myClient->name, name);
-            printf("\nthis is your name %s", myClient->name);
-            payload_size = makeJoin(outputs);
-            printf("yolo 0");
+            printf("\nthis is your name %s\n", myClient->name);
+            myClient->PNS += 1;
+            printf("the PNS is %i\n", myClient->PNS);
+            /*memset(outputs, 0, MAXSIZE);*/    /*es nezinu kapec bet saja pakete ir daudz lieka garbage ta jau itka funkcionalitatei paslaik nemaisa un viss lasas pareizi bet nezinu ka izlabot memsets nepalidz*/
+            *payload_size = makeJoin(outputs);
+            printf("state 0\n");
         }
         else if (state == 1){
             printf("yolo 1");
@@ -600,8 +608,12 @@ char checksum(int length, char* packet){
 /*______________________________________________________________________________________-*/
 
 int main(int argc, char ** argv){
+/*  
     myClient = malloc(sizeof(struct Client));
     myClient->PN = 0;
+    myClient->PNS = 0;
+*/
+    
     if (argc < 2){
         printf("not enough arguments \n");
         return -1;
@@ -655,6 +667,25 @@ int main(int argc, char ** argv){
         exit(1);
     }else{
         printf("good connection\n");
+
+
+        /*shared memory*/
+        int sizeofthings = MAXSIZE + sizeof(int) + sizeof(struct Client);
+        if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0)){
+        payload_size = shared_memory;
+        outputs = shared_memory + sizeof(int);
+        myClient = outputs + MAXSIZE;
+
+        /*initializing objects*/
+        *payload_size = 0;
+        myClient->PN = 0;
+        myClient->PNS = 0;
+        }else{
+            printf("shared memory allocation for client feiled\n");
+        }
+        /*shared memory*/
+
+
         int pid = fork();
         if (pid == 0){
             gameloop();

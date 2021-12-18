@@ -705,7 +705,7 @@ int unwrapping(char *out, int id)
         }
     }
 
-    print_bytes(out, 40);
+    
 
     int PN = getPacketNumber(out);
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
@@ -719,6 +719,7 @@ int unwrapping(char *out, int id)
     /*can check ID but overall Id will be more imoortant later*/
 
     int size = getPacketSize(out);
+    print_bytes(out, size);
     /*int n = 0;*/
     /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
 
@@ -955,11 +956,11 @@ void gameloop()
     /*currently does not do shit - but it does not have to*/
     while (1)
     {
-
+        int players_accepted = 0;
 
         for (i = 0; i < *client_count; i++)
         {
-            printf("game loop exicutes client count is %i", *client_count);
+            /*printf("game loop exicutes client count is %i\n", *client_count);*/
             /*  TODO:
             depending on game stage,
             1) Process lobby
