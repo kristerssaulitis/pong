@@ -19,7 +19,7 @@ clean:
 	rm *.o *.exe
 
 server_2: ./server_2.0.exe
-	./server_2.0.exe -p=12879
+	./server_2.0.exe -p=12177
 
 client2: ./client.exe
-	./client.exe -a=localhost -p=12879
+	./client.exe -a=localhost -p=12177

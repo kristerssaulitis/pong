@@ -406,7 +406,7 @@ int gameloop(){
         /*keyreading();*/
         if(state ==  0){
             char name[20];
-            printf("kads ir jusu nickname?");
+            printf("kads ir jusu nickname?\n");
             scanf("%s", name);
             strcpy(myClient->name, name);
             printf("\nthis is your name %s\n", myClient->name);

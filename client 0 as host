@@ -1,0 +1,98 @@
+while(1){
+        
+        
+        /*strcpy(shared_clients[id].name, "dfjnvfsdnvsndf");*/
+        /*print_bytes(outputs, payload_size);*
+        /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
+            /*escaping packet*/
+        int g = 0;
+        int es_size = 0;
+        int client_packets_ready = 0;
+        int ready_flag = 0;
+        
+        /*printf("vai tu te esi + PNC %i un iterators %i\n", shared_clients[0].PNC, iterator);*/
+
+        for(client_packets_ready; shared_clients[client_packets_ready].PNC >= iterator && *client_count > client_packets_ready ; client_packets_ready++){  
+            /*print_bytes(shared_buffer[client_packets_ready].output ,  shared_buffer[client_packets_ready].payload); */
+            /*itterating client_packets_ready*/
+        }
+        
+        printf("vai tu te esi + *client_count %i un client_packets_ready %i\n", *client_count, client_packets_ready);
+
+        if (client_packets_ready == *client_count && client_packets_ready > 0 && id == 0){
+            ready_flag = 1;
+            printf("ESCAPING LOOP\n");
+            for(g; g < *client_count ;g++){
+                int ue;
+                for(ue = 2; ue < shared_buffer[g].payload - 2; ue++){
+                        if(shared_buffer[g].output[ue] == '?'){
+                                int i = ue + 1;
+                                char temp1;
+                                char temp2;
+                                for(i; i <= shared_buffer[g].payload;i++){
+                                    if(i == ue+1){
+                                        temp1 = shared_buffer[g].output[i+1];
+                                        temp2 = shared_buffer[g].output[i+1];
+                                        shared_buffer[g].output[i+1] = shared_buffer[g].output[i];
+                                    }else{
+                                    temp2 = shared_buffer[g].output[i+1];
+                                    shared_buffer[g].output[i+1] = temp1;
+                                    }
+                                    temp1 = temp2;
+                                }
+                                shared_buffer[g].output[ue] = '?';
+                                shared_buffer[g].output[ue+1] = '*';
+                                ue++;
+                                es_size++;
+                            }else if(shared_buffer[g].output[ue] == '-'){
+                                int i = ue + 1;
+                                char temp1;
+                                char temp2;
+                                for(i; i <= shared_buffer[g].payload;i++){
+                                    if(i == ue+1){
+                                        temp1 = shared_buffer[g].output[i+1];
+                                        temp2 = shared_buffer[g].output[i+1];
+                                        shared_buffer[g].output[i+1] = shared_buffer[g].output[i];
+                                    }else{
+                                    temp2 = shared_buffer[g].output[i+1];
+                                    shared_buffer[g].output[i+1] = temp1;
+                                    }
+                                    temp1 = temp2;
+                                }
+                                /*printf("WTF\n");*/
+                                shared_buffer[g].output[ue] = '?';
+                                shared_buffer[g].output[ue+1] = '-';
+                                ue++;
+                                es_size++;
+                            }
+                        }
+            shared_buffer[g].payload = shared_buffer[g].payload + es_size;
+            es_size = 0;
+            }
+
+
+        }
+            
+    
+
+        
+        
+    /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
+        /*print_bytes(outputs , payload_size + es_size);*/
+        int suka = 0;
+        printf("WRITER before send check ready flag %i socket %i and id %i"  , ready_flag, my_socket, id);
+        for(suka; suka < *client_count && ready_flag; suka++){
+        printf("picinu pacinu kodam uz elli\n");
+        send(my_socket, shared_buffer[suka].output, shared_buffer[suka].payload, 0);
+        memset(shared_buffer[suka].output, 0, shared_buffer[suka].payload);
+        usleep(1000 * 200);
+        }
+
+        suka = 0;
+        g = 0;
+        ready_flag = 0;
+        client_packets_ready = 0;
+        es_size = 0;
+        usleep(1000 * 100);
+
+    }
