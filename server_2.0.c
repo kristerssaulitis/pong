@@ -730,7 +730,7 @@ int unwrapping(char *out, int id)
         }
     }
 
-    
+
 
     int PN = getPacketNumber(out);
     /*printf("PN from struct %i and PN from Package %i", shared_clients[id].PN, PN);*/
@@ -890,8 +890,8 @@ void writer (int id, int my_socket){
 
     int iterator = 0;
     while(1){
-        
-        
+
+
         /*strcpy(shared_clients[id].name, "dfjnvfsdnvsndf");*/
         /*print_bytes(outputs, payload_size);*
         /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis*/
@@ -900,14 +900,14 @@ void writer (int id, int my_socket){
         int es_size = 0;
         int client_packets_ready = 0;
         int ready_flag = 0;
-        
+
         /*printf("vai tu te esi + PNC %i un iterators %i\n", shared_clients[0].PNC, iterator);*/
 
         for(client_packets_ready; shared_clients[client_packets_ready].PNC > iterator && *client_count > client_packets_ready ; client_packets_ready++){  
             /*print_bytes(shared_buffer[client_packets_ready].output ,  shared_buffer[client_packets_ready].payload); */
             /*itterating client_packets_ready*/
         }
-        
+
         printf("vai tu te esi + *client_count %i un client_packets_ready %i\n", *client_count, client_packets_ready);
 
         if (client_packets_ready == *client_count && client_packets_ready > 0){
@@ -962,11 +962,11 @@ void writer (int id, int my_socket){
 
 
         }
-            
-    
 
-        
-        
+
+
+
+
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
         /*print_bytes(outputs , payload_size + es_size);*/
         
@@ -1021,7 +1021,7 @@ void gameloop()
 
             printf("tas ir vards ja %s\n", shared_clients[i].name);*/
 
-            
+
 
             /*ifo te*/
             if(shared_clients[i].gameStatus ==  0){
@@ -1049,8 +1049,38 @@ void gameloop()
                 printf("yolo 1");
             }
             else if (shared_clients[i].gameStatus == 3){
-                printf("yolo 1");
+                printf("serveris sak sutit atpakal ko zimet");
+                /*spele iet lidz 16 goalam*/
+                /*if (++cont%16==0){
+                if ((ball->y==scr->y-1)||(ball->y==1))
+                    ball->movver=!ball->movver;
+                if ((ball->x>=scr->x-2)||(ball->x<=2)){
+                    ball->movhor=!ball->movhor;
+                    if ((ball->y==player1->y-1)||(ball->y==player2->y-1)) {
+                    ball->movver=false;
+                    } else if ((ball->y==player1->y+1)||(ball->y==player2->y+1)) {
+                    ball->movver=true;
+                    } else if ((ball->y != player1->y) && (ball->y != player2->y)) {
+                    (ball->x>=scr->x-2) ? player1->c++: player2->c++;
+                    ball->x=scr->x/2;
+                    ball->y=scr->y/2;
+                    }
+                }
+                ball->x=ball->movhor ? ball->x+1 : ball->x-1;
+                ball->y=ball->movver ? ball->y+1 : ball->y-1;
+
+                if (player1->y<=1)
+                    player1->y=scr->y-2;
+                if (player1->y>=scr->y-1)
+                    player1->y=2;
+                if (player2->y<=1)
+                    player2->y=scr->y-2;
+                if (player2->y>=scr->y-1)
+                    player2->y=2;
+                }
+                */
             }
+
             else if (shared_clients[i].gameStatus == 4){
                 printf("yolo 1");
             }
@@ -1062,7 +1092,7 @@ void gameloop()
             3) In game - loop over inputs from all players, update gameworld
             4) Check if game ends
             */
-          
+
 
         }
         sleep(1);
