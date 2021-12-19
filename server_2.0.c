@@ -27,6 +27,7 @@ struct OutBuffer *shared_buffer = NULL;
 
 char checksum(int length, char *packet);
 
+
 /*Shared memory structures*/ /*We might need to reset some values to default because they get initialized with some trash*/
 
 typedef struct OutBuffer{
@@ -97,6 +98,15 @@ typedef struct Ball
 /*packet functions*/
 /*_____________________________________________________________________________________________________________*/
 
+int toInt(char c) {
+    /* vajag unsigned char*/
+    return c - '0';
+}
+
+char toChar(int i) {
+    return i + '0';
+}
+
 void addSep( char * buf){
     buf[0] = '-';
     buf[1] = '-';
@@ -150,7 +160,7 @@ char checksum(int length, char* packet){
 int makeAccept(char* pointer, int id){
     char* buf = pointer;
     int PN = shared_clients[id].PNC;
-    char playerID = shared_clients[id].playerID;
+    char playerID = shared_clients[id].status;
 
     int ret = 0;
 
@@ -190,9 +200,8 @@ int makeLobby(char* pointer, int id){
     int PN = shared_clients[id].PNC;
     char name[20];
     strcpy(name,shared_clients[id].name);
-    char count = shared_balls->playerCount;
     char playerID = shared_clients[id].playerID;
-    char playerCou = shared_balls->playerCount;
+    char playerCou = toChar(*client_count);
     int playerCount = playerCou - '0';
     int i = 0;
     int ret = 0;
@@ -201,8 +210,9 @@ int makeLobby(char* pointer, int id){
     addChar(&buf[ret], '4'); /* packetID 7*/ ret += 1;
     addInt(1+ 21*(playerCount), &buf[ret]); ret += 4;
 /*here will be the apaksa aizkomentetais kods*/
-    addChar(&buf[ret], count); /*12*/ ret += 1;
+    addChar(&buf[ret], playerCou); /*12*/ ret += 1;
     for (i; i < (playerCount); i++){
+        shared_clients[i].playerID = toChar(i);
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         add_string(shared_clients[i].name, &buf[ret], 20); ret += 20;
     }
@@ -222,7 +232,7 @@ int makeGameReady( char* pointer, int id ){
     char teamCou = shared_balls->teamCount;
     int teamCount = teamCou - '0';
     char teamID = shared_clients[id].teamID;
-    char playerCou = shared_balls->playerCount;
+    char playerCou = toChar(*client_count);
     int playerCount = playerCou - '0';
     int ret = 0;
 
@@ -265,7 +275,7 @@ int makeGameState( char* pointer, int id ){
     int PN = shared_clients[id].PNC;
     int windowWidth = shared_balls->windowWidth;
     int windowHeight = shared_balls->windowHeight;
-    char playerCou = shared_balls->playerCount;
+    char playerCou = toChar(*client_count);
     int playerCount = playerCou - '0';
     char ballCou = shared_balls->ballCount;
     int ballCount = ballCou - '0';
@@ -332,7 +342,7 @@ int makeGameEnd (char* pointer, int id, char status ){
     char teamCou = shared_balls->teamCount;
     int teamCount = teamCou - '0';
     char teamID = shared_clients[id].teamID;
-    char playerCou = shared_balls->playerCount;
+    char playerCou = toChar(*client_count);
     int playerCount = playerCou - '0';
     char playerID = shared_clients[id].playerID;
     char name[20];
@@ -807,14 +817,7 @@ int unwrapping(char *out, int id)
 
 }
 
-int toInt(char c) {
-    /* vajag unsigned char*/
-    return c - '0';
-}
 
-char toChar(int i) {
-    return i + '0';
-}
 
 void reciever (int id, int socket){
     char in[1];
@@ -908,11 +911,11 @@ void writer (int id, int my_socket){
             /*itterating client_packets_ready*/
         }
 
-        printf("vai tu te esi + *client_count %i un client_packets_ready %i\n", *client_count, client_packets_ready);
+        /*printf("vai tu te esi + *client_count %i un client_packets_ready %i\n", *client_count, client_packets_ready);*/
 
         if (client_packets_ready == *client_count && client_packets_ready > 0){
             ready_flag = 1;
-            printf("ESCAPING LOOP\n");
+            /*printf("ESCAPING LOOP\n");*/
                 int ue;
                 for(ue = 2; ue < shared_buffer[id].payload - 2; ue++){
                         if(shared_buffer[id].output[ue] == '?'){
@@ -970,9 +973,9 @@ void writer (int id, int my_socket){
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
         /*print_bytes(outputs , payload_size + es_size);*/
         
-        printf("WRITER before send check ready flag %i socket %i and id %i\n"  , ready_flag, my_socket, id);
+        /*printf("WRITER before send check ready flag %i socket %i and id %i\n"  , ready_flag, my_socket, id);*/
         if(client_packets_ready && ready_flag){
-        printf("picinu pacinu kodam uz elli\n");
+        /*printf("picinu pacinu kodam uz elli\n");*/
         send(my_socket, shared_buffer[id].output, shared_buffer[id].payload, 0);
         memset(shared_buffer[id].output, 0, shared_buffer[id].payload);
         usleep(1000 * 200);
@@ -993,7 +996,7 @@ void writer (int id, int my_socket){
 void process_client(int id, int socket){
     int pid = fork();
     if (pid == 0){
-        /*writer(id, socket);*/
+        writer(id, socket);
     }
     else{
         reciever(id, socket);
@@ -1018,35 +1021,36 @@ void gameloop()
         for (i = 0; i < *client_count; i++)
         {
             /*printf("game loop exicutes client count is %i\n", *client_count);
-
             printf("tas ir vards ja %s\n", shared_clients[i].name);*/
-
-
-
             /*ifo te*/
             if(shared_clients[i].gameStatus ==  0){
-
                 if(strlen(shared_clients[i].name) > 0 && strlen(shared_clients[i].name) < 21){
                     shared_clients[i].gameStatus++;
-                    printf("inkremente game statusu - %i\n", shared_clients[i].gameStatus);
+                    /*printf("inkremente game statusu - %i\n", shared_clients[i].gameStatus);*/
                 }
-
                 usleep(1000*100);
             }
             else if (shared_clients[i].gameStatus == 1){
                 shared_clients[i].status = toChar(i);
                 shared_clients[i].PNC++;
-                printf("GAMELOOP make accept status 1 no client %i\n", i + 1);
+                /*printf("GAMELOOP make accept status 1 no client %i\n", i + 1);*/
                 fflush(stdout);
-
                 /*te talak ir sape joprojam*/
                 shared_buffer[i].payload = 0;
                 shared_buffer[i].payload = makeAccept(shared_buffer[i].output, i);
                 /*print_bytes(shared_buffer[i].output, shared_buffer[i].payload);*/
                 
+
+                /*ŠEIT IR JAPIELIEK FLAGS KA VAR SAKT, KAD IR 2 MAZI UN SMIRDIGI KLIENTI*/
+                shared_clients[i].gameStatus++;
             }
             else if (shared_clients[i].gameStatus == 2){
-                printf("yolo 1");
+                printf("sak lobyot");
+                shared_clients[i].PNC++;
+                shared_buffer[i].payload = 0;
+                shared_buffer[i].payload = makeLobby(shared_buffer[i].output, i);
+                /*print_bytes(shared_buffer[i].output, shared_buffer[i].payload);*/
+
             }
             else if (shared_clients[i].gameStatus == 3){
                 printf("serveris sak sutit atpakal ko zimet");

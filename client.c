@@ -38,6 +38,7 @@ struct Client {
     int PN;
     int PNS;
     char name[20];
+    char targname[20];
     char playerID;
     char targetID;
     char gameType;
@@ -69,7 +70,6 @@ struct Client {
     int powerUpCount; char powerUpType;
     int windowWidth; int windowHeight;
     int gameDuration;
-    int ID1;
     float powerUpX1; float powerUpY1;
     int powerUpWidth1; int powerUpHeight1;
 };
@@ -96,6 +96,15 @@ int makePlayerInput(char* pointer, char input);
 int gameloop();
 int keyreading();
 void drawer();
+
+int toInt(char c) {
+    /* vajag unsigned char*/
+    return c - '0';
+}
+
+char toChar(int i) {
+    return i + '0';
+}
 
 int getPacketNumber(char *packet)
 {
@@ -129,14 +138,16 @@ long getPacketSize(char *packet)
 }
 
 void processAccept(char* out, int size){
-    char c = out[10];
+    char c = out[9];
     printf("this is accept\n");
-    print_bytes(out, size);
+    /*print_bytes(out, 11);*/
 
-    if (c != '-1'){
-        printf("viss ir bumbas");
+    if (c == '-1'){
+        printf("viss nav bumbas %c", c);
+        exit(1);
     } else {
-        printf("viss nav bumbas");
+        printf("viss ir bumbas %c", c);
+        myClient->playerID = c;
     }
 }
 
@@ -146,6 +157,26 @@ void processMessage(char* out, int size){
 
 void processLobby(char* out, int size){
     printf("this is lobby\n");
+    print_bytes(out, 20);
+    int playCount = toInt(out[9]);
+    char playID[playCount];
+    char allNameiz[playCount][20];
+    int current = 10;
+    int i = 0, z =0;
+    for (i; i< playCount; i++){
+        playID[i] = out[current++];
+        for(z; (out + z) != '\n' && z< 20; z++){
+            allNameiz[i][z] = out[current++];
+        }
+    }
+    myClient->playerID = playID[0];
+    strcpy(myClient->name, allNameiz[0]);
+    printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+    if (playCount>1) {
+        myClient->targetID = playID[1];
+        strcpy(myClient->targname, allNameiz[1]);
+    }
+
 }
 
 void processGameReady(char* out, int size){
@@ -210,7 +241,7 @@ int unwrapping(char *out){
         return -1;
     }
     printf("valid packet\n");
-/*koment share subscribe*/
+    /*koment share subscribe*/
     if(ID == '2'){
         printf(" packet recieved 2\n");
         processAccept(out, size);
@@ -219,13 +250,13 @@ int unwrapping(char *out){
         processMessage(out, size);
     }else if(ID == '7'){
         printf(" packet recieved 7\n");
-        processLobby(out, size);
+        processGameState(out, size);
     }else if(ID == '5'){
         printf(" packet recieved 5\n");
         processGameReady(out, size);
     }else if(ID == '4'){
         printf(" packet recieved 4\n");
-        processGameState(out, size);
+        processLobby(out, size);
     }else if (ID == '10'){
         printf(" packet recieved 10\n");
         processGameEnd(out, size);
@@ -272,7 +303,7 @@ void reader(int my_sock){
 
                             out[i] = '\0';
                             i = 0;
-                            print_bytes(out, 15);
+                            /*print_bytes(out, 15);*/
                             unwrapping(out);
                             /*memset(out, 0, 1000);*/
                             break;
@@ -414,14 +445,7 @@ int keyreading(){
     return 0;
 }
 
-int toInt(char c) {
-    /* vajag unsigned char*/
-    return c - '0';
-}
 
-char toChar(int i) {
-    return i + '0';
-}
 
 int gameloop(){
     int state = 0;
