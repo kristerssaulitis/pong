@@ -48,7 +48,8 @@ struct Client {
 
     int scoreTeam;
     int score;
-    float playerX1; float playerY1;
+    int playerX1; int playerY1;
+    int playerX2; int playerY2;
     int playerHeight1; int playerWidth1;
     int playerColor1;
 
@@ -156,8 +157,8 @@ void processMessage(char* out, int size){
 }
 
 void processLobby(char* out, int size){
-    printf("this is lobby\n");
-    print_bytes(out, 20);
+    printf("CLIENT this is lobby\n");
+    /*print_bytes(out, 20);*/
     int playCount = toInt(out[9]);
     char playID[playCount];
     char allNameiz[playCount][20];
@@ -165,22 +166,71 @@ void processLobby(char* out, int size){
     int i = 0, z =0;
     for (i; i< playCount; i++){
         playID[i] = out[current++];
-        for(z; (out + z) != '\n' && z< 20; z++){
+        for(z=0; (out + z) != '\n' && z< 20; z++){
             allNameiz[i][z] = out[current++];
         }
     }
-    myClient->playerID = playID[0];
-    strcpy(myClient->name, allNameiz[0]);
-    printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
-    if (playCount>1) {
-        myClient->targetID = playID[1];
-        strcpy(myClient->targname, allNameiz[1]);
+    if (myClient->playerID == '0'){
+        myClient->playerID = playID[0];
+        strcpy(myClient->name, allNameiz[0]);
+        printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+        if (playCount>1) {
+            myClient->targetID = playID[1];
+            strcpy(myClient->targname, allNameiz[1]);
+        }
+    } else {
+        myClient->targetID = playID[0];
+        strcpy(myClient->targname, allNameiz[0]);
+        myClient->playerID = playID[1];
+        strcpy(myClient->name, allNameiz[1]);
     }
+    
 
 }
 
 void processGameReady(char* out, int size){
     printf("this is game ready\n");
+    /*
+    int playCount = toInt(out[9]);
+    char playID[playCount];
+    char teamID[playCount];
+    char ready[playCount];
+    char allNameiz[playCount][20];
+    int x[playCount];
+    int y[playCount];
+    int current = 10;
+    int i = 0;
+    for (i; i< playCount; i++){
+        playID[i] = out[current++];
+        ready[i] = out[current++];
+        teamID[i] = out[current++];
+        current +=20;
+        x[i] = out[current +=4];
+        y[i] = out[current +=4];
+        current +=8;
+    }
+
+    if (myClient->playerID == '0'){
+        myClient->playerID = playID[0];
+        myClient->ready = ready[0];
+        myClient->playerX1 = x[0];
+        myClient->playerY1 = x[0];
+        printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+        if (playCount>1) {
+            myClient->targetID = playID[1];
+            myClient->playerX2 = x[1];
+            myClient->playerY2 = x[1];
+        }
+    } else {
+        myClient->playerID = playID[1];
+        myClient->ready = ready[1];
+        myClient->playerX1 = x[1];
+        myClient->playerY1 = x[1];
+        myClient->targetID = playID[0];
+        myClient->playerX2 = x[0];
+        myClient->playerY2 = x[0];
+    }
+    */
 }
 
 void processGameState(char* out, int size){
@@ -399,7 +449,7 @@ void writer(int my_sock){
                     }
                 }
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
-        print_bytes(outputs, *payload_size + es_size);
+        /*print_bytes(outputs, *payload_size + es_size);*/
         send(my_sock,outputs, *payload_size + es_size,0);
         memset(outputs, 0, *payload_size +es_size);
         /*payload_size = 0;*/
