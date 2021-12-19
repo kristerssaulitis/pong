@@ -26,6 +26,11 @@ void* shared_memory = NULL;
 char* outputs = NULL;
 int* payload_size = NULL;
 struct Client *myClient = NULL;
+struct Object* scr = NULL;
+struct Object* ball = NULL;
+struct Object* player1 = NULL;
+struct Object* player2 = NULL;
+struct Inputs* inp = NULL;
 /*for client to understand at which state it is*/
 
 
@@ -68,6 +73,16 @@ struct Client {
     float powerUpX1; float powerUpY1;
     int powerUpWidth1; int powerUpHeight1;
 };
+
+struct Object{
+    short int x, y, c;
+    bool movhor, movver, end;
+} ;
+
+struct Inputs{
+    char c;
+    bool end, pause;
+} ;
 /*----------------------------------*/
 
 void *connection_handler(void* socket_desc);
@@ -80,6 +95,7 @@ int makeJoin( char* pointer);
 int makePlayerInput(char* pointer, char input);
 int gameloop();
 int keyreading();
+void drawer();
 
 int getPacketNumber(char *packet)
 {
@@ -112,31 +128,37 @@ long getPacketSize(char *packet)
     return val;
 }
 
-void processAccept(out){
+void processAccept(char* out, int size){
+    char c = out[10];
     printf("this is accept\n");
+    print_bytes(out, size);
+
+    if (c != '-1'){
+        printf("viss ir bumbas");
+    } else {
+        printf("viss nav bumbas");
+    }
 }
 
-void processMessage(out){
+void processMessage(char* out, int size){
     printf("this is message\n");
 }
 
-void processLobby(out){
+void processLobby(char* out, int size){
     printf("this is lobby\n");
 }
 
-void processGameReady(out){
+void processGameReady(char* out, int size){
     printf("this is game ready\n");
 }
 
-void processGameState(out){
+void processGameState(char* out, int size){
     printf("this is game state\n");
 }
 
-void processGameEnd(out){
+void processGameEnd(char* out, int size){
     printf("this is game end\n");
 }
-
-
 
 int unwrapping(char *out){
      /*unescaping packet */
@@ -187,33 +209,26 @@ int unwrapping(char *out){
         printf("packet checksum is not correct\n");
         return -1;
     }
-    /*printf("valid packet\n");*/
-
-
-    /*printing*/
-/*
-    print_bytes(out, size + 10);
-    printf("our id is %c", ID);
-*/
+    printf("valid packet\n");
 /*koment share subscribe*/
     if(ID == '2'){
         printf(" packet recieved 2\n");
-        processAccept(out);
+        processAccept(out, size);
     }else if(ID == '3'){
         printf(" packet recieved 3\n");
-        processMessage(out);
+        processMessage(out, size);
     }else if(ID == '7'){
         printf(" packet recieved 7\n");
-        processLobby(out);
+        processLobby(out, size);
     }else if(ID == '5'){
         printf(" packet recieved 5\n");
-        processGameReady(out);
+        processGameReady(out, size);
     }else if(ID == '4'){
         printf(" packet recieved 4\n");
-        processGameState(out);
+        processGameState(out, size);
     }else if (ID == '10'){
         printf(" packet recieved 10\n");
-        processGameEnd(out);
+        processGameEnd(out, size);
     }
     else{
         printf("unknown packet recieved\n");
@@ -399,9 +414,19 @@ int keyreading(){
     return 0;
 }
 
+int toInt(char c) {
+    /* vajag unsigned char*/
+    return c - '0';
+}
+
+char toChar(int i) {
+    return i + '0';
+}
+
 int gameloop(){
     int state = 0;
     printf("pilnigs suds");
+
     while(1){
         /*keyreading();*/
         if(state ==  0){
@@ -417,10 +442,39 @@ int gameloop(){
             printf("state 0\n");
         }
         else if (state == 1){
+
             printf("yolo 1");
         }
         else if (state == 2){
-            printf("yolo 1");
+            printf("game ready atsutits no serverA 1");
+            initscr();
+    start_color();
+    init_pair(1,COLOR_BLUE,COLOR_BLACK);
+    keypad(stdscr,true);
+    noecho();
+    curs_set(0);
+    getmaxyx(stdscr,scr->y,scr->x);
+    player1->x= scr->x-2;
+    player1->y= scr->y/2;
+    player1->c= 0;
+    player1->movver = false;
+    player1->movhor = false;
+    player1->end = false;
+
+    player2->x= 1;
+    player2->y= scr->y/2;
+    player2->c= 0;
+    player2->movver = false;
+    player2->movhor = false;
+    player2->end = false;
+
+    ball->x= scr->x/2;
+    ball->y= scr->y/2;
+    ball->c= 0;
+    ball->movver = false;
+    ball->movhor = false;
+    ball->end = false;
+    drawer();
         }
         else if (state == 3){
             printf("yolo 1");
@@ -433,6 +487,40 @@ int gameloop(){
 }
 /*Packet functions*/
 /*Note - although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
+
+
+void drawer(){
+    mvprintw(4,0,
+        "\t \t\t\tPlayer 1 your controls are up and down arrow         \n"
+        "\t \t\t\tPush ANY key to start, 'p' for pause and ESC to quit" );
+
+    getch();
+    for (nodelay(stdscr,1); !inp->end; usleep(4000)) {
+
+        /*šeit sākas input reading*/
+        switch (getch()) {
+        case KEY_DOWN: inp->c = 'd'; break;
+        case KEY_UP:   inp->c = 'u'; break;
+        case 'p':      getchar();inp->c = 'p'; break;
+        case 0x1B:    endwin(); inp->c = 'e'; break;
+        }
+        myClient->PNS += 1;
+        *payload_size = makePlayerInput(outputs, inp->c);
+        usleep(1000* 200);
+        erase();
+        mvprintw(2,scr->x/2-2,"%i | %i",player1->c,player2->c); /*scoreboard*/
+        mvvline(0,scr->x/2,ACS_VLINE,scr->y); /*videja linija*/
+        attron(COLOR_PAIR(1));
+        mvprintw(ball->y,ball->x,"o");
+        int i;
+        for(i=-1;i<2;i++){
+            mvprintw(player1->y+i,player1->x,"|");
+            mvprintw(player2->y+i,player2->x,"|");
+        }
+        attroff(COLOR_PAIR(1));
+    }
+}
+
 
 int makeJoin(char* pointer ){
     char* buf = pointer;
@@ -603,12 +691,12 @@ char checksum(int length, char* packet){
 /*______________________________________________________________________________________-*/
 
 int main(int argc, char ** argv){
-/*  
+/*
     myClient = malloc(sizeof(struct Client));
     myClient->PN = 0;
     myClient->PNS = 0;
 */
-    
+
     if (argc < 2){
         printf("not enough arguments \n");
         return -1;
@@ -665,11 +753,17 @@ int main(int argc, char ** argv){
 
 
         /*shared memory*/
-        int sizeofthings = MAXSIZE + sizeof(int) + sizeof(struct Client);
+        int sizeofthings = MAXSIZE + sizeof(int) + sizeof(struct Client) + sizeof(struct Object) + sizeof(struct Inputs);
         if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0)){
         payload_size = shared_memory;
         outputs = shared_memory + sizeof(int);
         myClient = outputs + MAXSIZE;
+        scr = (struct Object*) (sizeof(myClient) +myClient);
+        ball = (struct Object*) (sizeof(scr) +scr);
+        player1 = (struct Object*) (sizeof(ball) +ball);
+        player2 = (struct Object*) (sizeof(player1) +player1);
+        inp = (struct Inputs*) (sizeof(player2) +player2);
+
 
         /*initializing objects*/
         *payload_size = 0;
