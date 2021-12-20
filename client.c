@@ -296,6 +296,7 @@ int unwrapping(char *out){
     /*koment share subscribe*/
     if(ID == '2'){
         printf(" packet recieved 2\n");
+        print_bytes(out, size+9);
         processAccept(out, size);
     }else if(ID == '3'){
         printf(" packet recieved 3\n");
@@ -520,7 +521,7 @@ int gameloop(){
         }
         else if (state == 1){
 
-            printf("gaida game ready no servera\n");
+            /*printf("gaida game ready no servera\n");*/
             if(myClient->ready == '1'){
                 printf("game ready atsutits no serverA 1\n");
                 /*state++;*/
