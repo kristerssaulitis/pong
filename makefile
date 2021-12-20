@@ -1,8 +1,14 @@
 all: server_2.0  client
-all1: gcc ponk.c -lncurses
+all1: ponk
 run1: server_2
 run2: client2
-run3: ./a.out
+run3: ponk2
+
+ponk:
+	gcc ponk.c -lncurses
+
+ponk2:
+	./a.out
 
 server_2.0: server_2.0.o
 	gcc -Wall -std=gnu11 server_2.0.o -o server_2.0.exe

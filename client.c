@@ -192,7 +192,6 @@ void processLobby(char* out, int size){
 
 void processGameReady(char* out, int size){
     printf("this is game ready\n");
-
     int playCount = toInt(out[9]);
     char playID[playCount];
     char teamID[playCount];
@@ -306,7 +305,7 @@ int unwrapping(char *out){
         processGameState(out, size);
     }else if(ID == '5'){
         printf("HERE packet recieved 5\n");
-        processGameReady(out, size);
+        /*processGameReady(out, size);*/
     }else if(ID == '4'){
         printf(" packet recieved 4\n");
         processLobby(out, size);
