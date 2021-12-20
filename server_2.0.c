@@ -250,12 +250,12 @@ int makeGameReady( char* pointer, int id ){
         addInt(shared_clients[i].team_goal2X, &buf[ret]); ret += 4;
         addInt(shared_clients[i].team_goal2Y, &buf[ret]); ret += 4;
     }
-    addChar(&buf[ret], playerCou);
-    for (i; i < (playerCount); i++){
+    addChar(&buf[ret], playerCou); ret += 1;
+    for (i=0; i < (playerCount); i++){
         addChar(&buf[ret], shared_clients[i].playerID); ret += 1;
         addChar(&buf[ret], shared_clients[i].ready); ret += 1;
         addChar(&buf[ret], shared_clients[i].teamID); ret += 1;
-        add_string(shared_clients[i].name, &buf[ret], 20); ret += 10;
+        add_string(shared_clients[i].name, &buf[ret], 20); ret += 20;
         addInt(shared_clients[i].playerX1, &buf[ret]); ret += 4;
         addInt(shared_clients[i].playerY1, &buf[ret]); ret += 4;
         addInt(shared_clients[i].playerWidth1, &buf[ret]); ret += 4;
@@ -906,7 +906,7 @@ void writer (int id, int my_socket){
 
         /*printf("vai tu te esi + PNC %i un iterators %i\n", shared_clients[0].PNC, iterator);*/
 
-        for(client_packets_ready; shared_clients[client_packets_ready].PNC > iterator && *client_count > client_packets_ready ; client_packets_ready++){  
+        for(client_packets_ready; shared_clients[client_packets_ready].PNC > iterator && *client_count > client_packets_ready ; client_packets_ready++){
             /*print_bytes(shared_buffer[client_packets_ready].output ,  shared_buffer[client_packets_ready].payload); */
             /*itterating client_packets_ready*/
         }
@@ -961,7 +961,7 @@ void writer (int id, int my_socket){
                         }
             shared_buffer[g].payload = shared_buffer[g].payload + es_size;
             es_size = 0;
-            
+
 
 
         }
@@ -972,7 +972,7 @@ void writer (int id, int my_socket){
 
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
         /*print_bytes(outputs , payload_size + es_size);*/
-        
+
 
         print_bytes(shared_buffer[id].output, shared_buffer[id].payload);
         /*printf("WRITER before send check ready flag %i socket %i and id %i\n"  , ready_flag, my_socket, id);*/
@@ -1041,7 +1041,7 @@ void gameloop()
                 shared_buffer[i].payload = 0;
                 shared_buffer[i].payload = makeAccept(shared_buffer[i].output, i);
                 /*print_bytes(shared_buffer[i].output, shared_buffer[i].payload);*/
-                
+
 
                 /*ŠEIT IR JAPIELIEK FLAGS KA VAR SAKT, KAD IR 2 MAZI UN SMIRDIGI KLIENTI*/
                 shared_clients[i].gameStatus++;
@@ -1055,7 +1055,7 @@ void gameloop()
                 if (shared_clients[1].gameStatus == 2){
                     shared_clients[i].gameStatus++;
                 }
-                
+
             }
             else if (shared_clients[i].gameStatus == 3){
                 printf("serveris sak sutit atpakal ko zimet ar i %i\n", i);
@@ -1070,7 +1070,7 @@ void gameloop()
                 shared_clients[i].PNC++;
                 shared_buffer[i].payload = 0;
 
-                
+
                 if (i == 0){
 
                     shared_clients[i].ready = '1'; /*probbably should set it to not ready ;/*/
@@ -1078,7 +1078,7 @@ void gameloop()
                     shared_clients[i].playerX1 = 2;
                     shared_clients[i].playerY1 = 2;
                     /*
-                    shared_clients[i].playerWidth1 = shared_balls->windowWidth - 2;     
+                    shared_clients[i].playerWidth1 = shared_balls->windowWidth - 2;
                     shared_clients[i].playerHeight1 = shared_balls->windowHeight - 2;
                     */
                     shared_clients[i].playerWidth1 = 0;
@@ -1096,10 +1096,10 @@ void gameloop()
                     shared_clients[i].playerHeight1 = 0;
                 }
 
-               
+
                 shared_buffer[i].payload = makeGameReady(shared_buffer[i].output, i);
 
-                
+
 
                 /*spele iet lidz 16 goalam*/
                 /*if (++cont%16==0){

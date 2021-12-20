@@ -1,7 +1,8 @@
 all: server_2.0  client
-
+all1: gcc ponk.c -lncurses
 run1: server_2
 run2: client2
+run3: ./a.out
 
 server_2.0: server_2.0.o
 	gcc -Wall -std=gnu11 server_2.0.o -o server_2.0.exe
@@ -19,7 +20,7 @@ clean:
 	rm *.o *.exe
 
 server_2: ./server_2.0.exe
-	./server_2.0.exe -p=12149
+	./server_2.0.exe -p=12222
 
 client2: ./client.exe
-	./client.exe -a=localhost -p=12149
+	./client.exe -a=localhost -p=12222

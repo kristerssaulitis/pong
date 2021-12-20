@@ -186,13 +186,13 @@ void processLobby(char* out, int size){
         printf("this is playerID %c, this is its name %s\n", myClient->playerID, myClient->name);
 
     }
-    
+
 
 }
 
 void processGameReady(char* out, int size){
     printf("this is game ready\n");
-    
+
     int playCount = toInt(out[9]);
     char playID[playCount];
     char teamID[playCount];
@@ -232,7 +232,7 @@ void processGameReady(char* out, int size){
         myClient->playerX2 = x[0];
         myClient->playerY2 = x[0];
     }
-    
+
 }
 
 void processGameState(char* out, int size){
@@ -282,12 +282,12 @@ int unwrapping(char *out){
     int size = getPacketSize(out);
     /*int n = 0;*/
     /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
-
+    printf("this is size %i", size);
     char CS = checksum(size+9, out);
     char CSP = out[size + 9];
     /*nu itka visam bet hz japateste*/
 
-    print_bytes(out, size + 9);
+    print_bytes(out, size);
     printf("checksums are from packet - %i calculated - %i", CSP , CS);
     if(CS != CSP){
         printf("packet checksum is not correct\n");
@@ -529,7 +529,7 @@ int gameloop(){
         }
         else if (state == 2){
             printf("game ready atsutits no serverA 1\n");
-            
+
             initscr();
             start_color();
             init_pair(1,COLOR_BLUE,COLOR_BLACK);
@@ -558,7 +558,7 @@ int gameloop(){
             ball->movhor = false;
             ball->end = false;
             drawer();
-            
+
         }
         else if (state == 3){
             printf("yolo 1");
