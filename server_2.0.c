@@ -57,7 +57,7 @@ typedef struct Client
 
     int scoreTeam;
     int score;
-    float playerX1; float playerY1;
+    int playerX1; int playerY1;
     int playerHeight1; int playerWidth1;
     int playerColor1;
 
@@ -380,7 +380,7 @@ int makeGameEnd (char* pointer, int id, char status ){
 /*shared memory*/
 void get_shared_memory()
 {
-    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + MAX_CLIENTS * sizeof(struct OutBuffer) + 100;
+    int sizeofthings = sizeof(struct Ball) + MAX_CLIENTS * sizeof(struct Client) + sizeof(int) + MAX_CLIENTS * sizeof(struct OutBuffer) + 1000;
     if (shared_memory = mmap(NULL, sizeofthings, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0))
     {
         client_count = shared_memory;
@@ -1057,6 +1057,44 @@ void gameloop()
             }
             else if (shared_clients[i].gameStatus == 3){
                 printf("serveris sak sutit atpakal ko zimet\n");
+/*
+                shared_balls->windowWidth = 50;
+                shared_balls->windowHeight = 20;
+                shared_balls->teamCount = '0';
+
+                shared_clients[i].PNC++;
+                shared_buffer[i].payload = 0;
+
+                printf("SERVER MAKEGAMEREADY: serveris sak sutit atpakal ko zimet 2\n");
+                fflush(stdout);
+                if (i == 0){
+
+                    shared_clients[i].ready = '1';
+                    shared_clients[i].teamID = '0';
+                    shared_clients[i].playerX1 = 2;
+                    shared_clients[i].playerY1 = 2;
+                    shared_clients[i].playerX2 = shared_balls->windowWidth - 2;
+                    shared_clients[i].playerY2 = shared_balls->windowHeight - 2;
+
+                    shared_clients[i].playerWidth1 = 0;
+                    shared_clients[i].playerHeight1 = 0;
+                } else if(i == 1){
+                    shared_clients[i].ready = '1';
+                    shared_clients[i].teamID = '1';
+                    shared_clients[i].playerX2 = 2;
+                    shared_clients[i].playerY2 = 2;
+                    shared_clients[i].playerX1 = shared_balls->windowWidth - 2;
+                    shared_clients[i].playerY1 = shared_balls->windowHeight - 2;
+
+                    shared_clients[i].playerWidth1 = 0;
+                    shared_clients[i].playerHeight1 = 0;
+                }
+
+                printf("SERVER MAKEGAMEREADY: serveris sak sutit atpakal ko zimet 3\n");
+                fflush(stdout);
+                shared_buffer[i].payload = makeGameReady(shared_buffer[i].output, i);
+*/
+
                 /*spele iet lidz 16 goalam*/
                 /*if (++cont%16==0){
                 if ((ball->y==scr->y-1)||(ball->y==1))

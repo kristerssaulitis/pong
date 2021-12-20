@@ -183,6 +183,8 @@ void processLobby(char* out, int size){
         strcpy(myClient->targname, allNameiz[0]);
         myClient->playerID = playID[1];
         strcpy(myClient->name, allNameiz[1]);
+        printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+
     }
     
 
@@ -190,7 +192,7 @@ void processLobby(char* out, int size){
 
 void processGameReady(char* out, int size){
     printf("this is game ready\n");
-    /*
+    
     int playCount = toInt(out[9]);
     char playID[playCount];
     char teamID[playCount];
@@ -230,7 +232,7 @@ void processGameReady(char* out, int size){
         myClient->playerX2 = x[0];
         myClient->playerY2 = x[0];
     }
-    */
+    
 }
 
 void processGameState(char* out, int size){
