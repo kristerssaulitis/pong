@@ -754,7 +754,7 @@ int unwrapping(char *out, int id)
     /*can check ID but overall Id will be more imoortant later*/
 
     int size = getPacketSize(out);
-    print_bytes(out, size);
+    /*print_bytes(out, size);*/
     /*int n = 0;*/
     /*daa mums nav beigas seperatora mes vinu jau nonemam taka poh ar checksum un PN checku pietiks var protams pachekot pec checksuma bet nu kada jega*/
 
@@ -973,6 +973,8 @@ void writer (int id, int my_socket){
     /*sitos spagetus lugums apiet ar likumu - tadu jobanumu es vel nebiju ieprieks rakstijis -  bet vismaz tas strada*/
         /*print_bytes(outputs , payload_size + es_size);*/
         
+
+        print_bytes(shared_buffer[id].output, shared_buffer[id].payload);
         /*printf("WRITER before send check ready flag %i socket %i and id %i\n"  , ready_flag, my_socket, id);*/
         if(client_packets_ready && ready_flag){
         /*printf("picinu pacinu kodam uz elli\n");*/
@@ -1056,44 +1058,48 @@ void gameloop()
                 
             }
             else if (shared_clients[i].gameStatus == 3){
-                printf("serveris sak sutit atpakal ko zimet\n");
-/*
+                printf("serveris sak sutit atpakal ko zimet ar i %i\n", i);
+
                 shared_balls->windowWidth = 50;
                 shared_balls->windowHeight = 20;
                 shared_balls->teamCount = '0';
 
+                shared_clients[i].scoreTeam = 0;
+                shared_clients[i].score = 0;
+
                 shared_clients[i].PNC++;
                 shared_buffer[i].payload = 0;
 
-                printf("SERVER MAKEGAMEREADY: serveris sak sutit atpakal ko zimet 2\n");
-                fflush(stdout);
+                
                 if (i == 0){
 
-                    shared_clients[i].ready = '1';
+                    shared_clients[i].ready = '1'; /*probbably should set it to not ready ;/*/
                     shared_clients[i].teamID = '0';
                     shared_clients[i].playerX1 = 2;
                     shared_clients[i].playerY1 = 2;
-                    shared_clients[i].playerX2 = shared_balls->windowWidth - 2;
-                    shared_clients[i].playerY2 = shared_balls->windowHeight - 2;
-
+                    /*
+                    shared_clients[i].playerWidth1 = shared_balls->windowWidth - 2;     
+                    shared_clients[i].playerHeight1 = shared_balls->windowHeight - 2;
+                    */
                     shared_clients[i].playerWidth1 = 0;
                     shared_clients[i].playerHeight1 = 0;
                 } else if(i == 1){
                     shared_clients[i].ready = '1';
-                    shared_clients[i].teamID = '1';
-                    shared_clients[i].playerX2 = 2;
-                    shared_clients[i].playerY2 = 2;
+                    shared_clients[i].teamID = '0';
                     shared_clients[i].playerX1 = shared_balls->windowWidth - 2;
                     shared_clients[i].playerY1 = shared_balls->windowHeight - 2;
-
+                    /*
+                    shared_clients[i].playerX1 = shared_balls->windowWidth - 2;
+                    shared_clients[i].playerY1 = shared_balls->windowHeight - 2;
+                    */
                     shared_clients[i].playerWidth1 = 0;
                     shared_clients[i].playerHeight1 = 0;
                 }
 
-                printf("SERVER MAKEGAMEREADY: serveris sak sutit atpakal ko zimet 3\n");
-                fflush(stdout);
+               
                 shared_buffer[i].payload = makeGameReady(shared_buffer[i].output, i);
-*/
+
+                
 
                 /*spele iet lidz 16 goalam*/
                 /*if (++cont%16==0){

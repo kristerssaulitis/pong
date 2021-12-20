@@ -173,7 +173,7 @@ void processLobby(char* out, int size){
     if (myClient->playerID == '0'){
         myClient->playerID = playID[0];
         strcpy(myClient->name, allNameiz[0]);
-        printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+        printf("this is playerID %c, this is its name %s\n", myClient->playerID, myClient->name);
         if (playCount>1) {
             myClient->targetID = playID[1];
             strcpy(myClient->targname, allNameiz[1]);
@@ -183,7 +183,7 @@ void processLobby(char* out, int size){
         strcpy(myClient->targname, allNameiz[0]);
         myClient->playerID = playID[1];
         strcpy(myClient->name, allNameiz[1]);
-        printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
+        printf("this is playerID %c, this is its name %s\n", myClient->playerID, myClient->name);
 
     }
     
@@ -218,7 +218,7 @@ void processGameReady(char* out, int size){
         myClient->playerX1 = x[0];
         myClient->playerY1 = x[0];
         printf("this is playerID %c, this is its name %s", myClient->playerID, myClient->name);
-        if (playCount>1) {
+        if (playCount > 1) {
             myClient->targetID = playID[1];
             myClient->playerX2 = x[1];
             myClient->playerY2 = x[1];
@@ -287,7 +287,8 @@ int unwrapping(char *out){
     char CSP = out[size + 9];
     /*nu itka visam bet hz japateste*/
 
-    /*printf("checksums are from packet - %i calculated - %i", CSP , CS);*/
+    print_bytes(out, size + 9);
+    printf("checksums are from packet - %i calculated - %i", CSP , CS);
     if(CS != CSP){
         printf("packet checksum is not correct\n");
         return -1;
@@ -304,7 +305,7 @@ int unwrapping(char *out){
         printf(" packet recieved 7\n");
         processGameState(out, size);
     }else if(ID == '5'){
-        printf(" packet recieved 5\n");
+        printf("HERE packet recieved 5\n");
         processGameReady(out, size);
     }else if(ID == '4'){
         printf(" packet recieved 4\n");
@@ -516,41 +517,48 @@ int gameloop(){
             /*memset(outputs, 0, MAXSIZE);*/    /*es nezinu kapec bet saja pakete ir daudz lieka garbage ta jau itka funkcionalitatei paslaik nemaisa un viss lasas pareizi bet nezinu ka izlabot memsets nepalidz*/
             *payload_size = makeJoin(outputs);
             printf("state 0\n");
+            state++;
         }
         else if (state == 1){
 
-            printf("yolo 1");
+            printf("gaida game ready no servera\n");
+            if(myClient->ready == '1'){
+                printf("game ready atsutits no serverA 1\n");
+                /*state++;*/
+            }
         }
         else if (state == 2){
-            printf("game ready atsutits no serverA 1");
+            printf("game ready atsutits no serverA 1\n");
+            
             initscr();
-    start_color();
-    init_pair(1,COLOR_BLUE,COLOR_BLACK);
-    keypad(stdscr,true);
-    noecho();
-    curs_set(0);
-    getmaxyx(stdscr,scr->y,scr->x);
-    player1->x= scr->x-2;
-    player1->y= scr->y/2;
-    player1->c= 0;
-    player1->movver = false;
-    player1->movhor = false;
-    player1->end = false;
+            start_color();
+            init_pair(1,COLOR_BLUE,COLOR_BLACK);
+            keypad(stdscr,true);
+            noecho();
+            curs_set(0);
+            getmaxyx(stdscr,scr->y,scr->x);
+            player1->x= scr->x-2;
+            player1->y= scr->y/2;
+            player1->c= 0;
+            player1->movver = false;
+            player1->movhor = false;
+            player1->end = false;
 
-    player2->x= 1;
-    player2->y= scr->y/2;
-    player2->c= 0;
-    player2->movver = false;
-    player2->movhor = false;
-    player2->end = false;
+            player2->x= 1;
+            player2->y= scr->y/2;
+            player2->c= 0;
+            player2->movver = false;
+            player2->movhor = false;
+            player2->end = false;
 
-    ball->x= scr->x/2;
-    ball->y= scr->y/2;
-    ball->c= 0;
-    ball->movver = false;
-    ball->movhor = false;
-    ball->end = false;
-    drawer();
+            ball->x= scr->x/2;
+            ball->y= scr->y/2;
+            ball->c= 0;
+            ball->movver = false;
+            ball->movhor = false;
+            ball->end = false;
+            drawer();
+            
         }
         else if (state == 3){
             printf("yolo 1");
@@ -558,8 +566,9 @@ int gameloop(){
         else if (state == 4){
             printf("yolo 1");
         }
-        usleep(1000*200);
+    usleep(1000*200);
     }
+
 }
 /*Packet functions*/
 /*Note - although I coppied here 10 functions the actual count for client is less some functions are used by client but some by server so it will change*/
